@@ -1,0 +1,37 @@
+[
+    {
+        "name": "Starter Kit",
+        "version": "1.0",
+        "description": "MaxIQ Starter Application",
+        "file": "STARTER.uf2",
+        "help_link": "https://maxiq.space/starter-help"
+    },
+    {
+        "name": "Soil Moisture Kit",
+        "version": "1.0",
+        "description": "MaxIQ Soil Moisure Application",
+        "file": "SOIL.uf2",
+        "help_link": "https://maxiq.space/soil-help"
+    },
+    {
+        "name": "TinyGS",
+        "version": "2403241",
+        "description": "LoRa based Tiny Ground Station",
+        "file": "tinygs.uf2",
+        "help_link": "https://tinygs.com"
+    },
+    {
+        "name": "MicroPython",
+        "version": "v1.23.0 (2024-06-02)",
+        "description": "Low-level Python operating system",
+        "file": "micropython.uf2",
+        "help_link": "https://micropython.org"
+    },
+    {
+        "name": "I²C Scanner",
+        "version": "1.0",
+        "description": "I²C device scanner to detect devices on the xBus",
+        "file": "I2C-Scanner.uf2",
+        "help_link": "https://maxiq.space/i2c-scanner-help"
+    }
+]

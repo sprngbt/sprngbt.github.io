@@ -1,0 +1,16 @@
+{
+    "name": "domino4 uf2 bootloader",
+    "version": "2.2",
+    "new_install_prompt_erase": true,
+    "builds": [
+        {
+            "chipFamily": "ESP32-S3",
+            "parts": [
+                {
+                    "path": "domino4_uf2.bin",
+                    "offset": 0
+                }
+            ]
+        }
+    ]
+}

@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+  <meta content="width=device-width" name="viewport">
+  <meta name="theme-color" content="#222222">
+  <title>Install MaxIQ uf2 bootloader</title>
+  <script type="module" src="https://unpkg.com/esp-web-tools@10/dist/web/install-button.js?module">
+  </script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      fetch('uf2_files.json')
+        .then(response => response.json())
+        .then(data => {
+          let tableBody = document.getElementById('uf2-table-body');
+          data.forEach(file => {
+            let row = document.createElement('tr');
+            row.innerHTML = `
+                            <td class="tg-hmp3">${file.name}</td>
+                            <td class="tg-hmp3">${file.version}</td>
+                            <td class="tg-hmp3"><a href="${file.help_link}">${file.description}</a></td>
+                            <td class="tg-j0tj"><a href="uf2s/${file.file}" target="_blank" rel="noopener noreferrer"><img class="contain" src="files/dl.svg" /></a></td>
+                        `;
+            tableBody.appendChild(row);
+          });
+        })
+        .catch(error => console.error('Error fetching the list:', error));
+    });
+  </script>
+  <style>
+    body {
+      font-family: Verdana, Helvetica, sans-serif;
+      text-align: center;
+      background-color: #222;
+      margin: 0;
+      color: #fff;
+      background-image: url('/files/maxiq.svg');
+      background-repeat: no-repeat;
+      background-position: bottom right, 10%, 10%;
+    }
+
+    select {
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
+      background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' fill='white'><polygon points='0,0 100,0 50,50'/></svg>") no-repeat;
+      background-size: 12px;
+      background-position: 206px 17px;
+      padding-left: 12px !important;
+      background-repeat: no-repeat;
+      outline: none;
+    }
+
+    select:-moz-focusring {
+      transition-duration: 0s;
+      color: transparent;
+      text-shadow: 0 0 0 #fff;
+    }
+
+    option {
+      background-color: var(--c-3);
+      color: var(--c-f);
+    }
+
+    .btn {
+      outline: none;
+      cursor: pointer;
+      padding: 8px;
+      margin: 10px;
+      width: 230px;
+      font-family: Verdana, Helvetica, sans-serif;
+      font-size: 19px;
+      background-color: #333;
+      color: white;
+      border: 0px solid white;
+      border-radius: 25px;
+    }
+
+    /*     img {
+      width: 158px;
+      max-width: 80%;
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+      margin: 3vh 0 5px 0;
+      animation: fi 1s;
+    } */
+
+    @keyframes fi {
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
+    }
+
+    .main {
+      animation: fi 1.5s .7s both;
+    }
+
+    a {
+      color: #777;
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+    ol {
+      margin: auto;
+      text-align: left;
+      display: inline-block;
+    }
+
+    li::marker {
+      text-decoration: bold;
+      color: #09f;
+    }
+
+    li {
+      margin: 5px;
+    }
+
+    .container {
+      width: 80%;
+      max-width: 510px;
+      margin: auto;
+      border-radius: 5px;
+      box-sizing: border-box;
+      background-color: #222;
+      overflow: hidden;
+    }
+
+    .inst-button {
+      padding: 5px 0;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      ewt-install-dialog {
+        /*--mdc-theme-primary: #ffa000; /*buttons*/
+        --mdc-theme-surface: #333;
+        --mdc-dialog-heading-ink-color: #fff;
+        --mdc-dialog-content-ink-color: #ddd;
+        --mdc-text-field-fill-color: #ddd;
+      }
+    }
+  </style>
+  <style></style>
+</head>
+
+<body onload="checkSupported()">
+  <div class="main">
+    <h2>Welcome to the MaxIQ Space uf2 bootloader web installer!</h2>
+
+    <div id="flasher">
+      <!--Symbols:  https://www.w3schools.com/charsets/ref_utf_symbols.asp -->
+      <ol>
+        <li>Plug your CWA v2 or CWN v5 into a USB-C port. We will install MaxIQ uf2 bootloader to it.</li>
+        <li id="coms">Hit "Install" and select the correct serial port.
+          <!-- 	  <a onclick="showSerialHelp()">No device found?</a> -->
+        </li>
+        <li>If connection is troublesome, put the CWA into download mode:
+          <ul>
+            <li>Press and keep holding &#x25B6; down</li>
+            <li>Press &#x21BB;</li>
+            <li>Release &#x25B6;</li>
+            <li>
+              <font color="#f00">&#x2600;</font> will continuously illuminate.
+            </li>
+          </ul>
+        </li>
+        <li>Click on &#x21BB; after successful install. A "CWA" drive will appear on your computer, <font color="#0f0">
+            &#x2600;</font> will continuously illuminate.
+          <!-- and <font color="#f00">&#x2600;</font> will pulse. -->
+        </li>
+      </ol><br><br>
+
+
+      <div class="container inst-button">
+        <esp-web-install-button id="inst" manifest="/files/manifest.json">
+          <button class="btn" slot="activate">Install</button>
+        </esp-web-install-button><br>
+      </div>
+    </div>
+    <br><br>
+    <h2>List of projects with readymade .uf2 files</h2>
+
+    <div id="flasher">
+
+      <ol>
+        <li>Connect your CWA/CWN to your computer via the USB-C port.</li>
+        <li>Click on the link to download the .uf2 file</li>
+        <li>Double-click on &#x21BB; to put your CWA/CWN in UF2 mode. A "CWA" drive will appear on your computer, <font
+            color="#0f0">&#x2600;</font> will continuously.
+          <!-- illuminate and <font color="#f00">&#x2600;</font> will pulse. -->
+        </li>
+        <li>Drag-and-drop the uf2 file to the CWA drive. The core will execute the project immediately.</li>
+        <li>Alternatively you can right-clink on the link, choose "Save Link As..." and point to the CWA drive.</li>
+      </ol><br><br>
+    </div>
+
+
+
+    <style type="text/css">
+      .tg {
+        border-collapse: collapse;
+        border-color: #9ABAD9;
+        border-spacing: 0;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      .tg td {
+        background-color: #EBF5FF;
+        border-color: #9ABAD9;
+        border-style: solid;
+        border-width: 1px;
+        color: #444;
+        font-family: Arial, sans-serif;
+        font-size: 14px;
+        overflow: hidden;
+        padding: 10px 5px;
+        word-break: normal;
+      }
+
+      .tg th {
+        background-color: #409cff;
+        border-color: #9ABAD9;
+        border-style: solid;
+        border-width: 1px;
+        color: #fff;
+        font-family: Arial, sans-serif;
+        font-size: 14px;
+        font-weight: normal;
+        overflow: hidden;
+        padding: 10px 5px;
+        word-break: normal;
+      }
+
+      .tg .tg-hmp3 {
+        background-color: #D2E4FC;
+        text-align: left;
+        vertical-align: middle
+      }
+
+      .tg .tg-0lax {
+        text-align: left;
+        vertical-align: middle
+      }
+
+      .contain {
+        max-width: 24px;
+        max-height: 24px;
+        /*   object-fit: contain; */
+      }
+    </style>
+    <!-- <table class="tg">
+        <thead>
+          <tr>
+            <th class="tg-0lax"><span style="font-weight:bold">Description</span></th>
+            <th class="tg-0lax"><span style="font-weight:bold">Version</span></th>
+            <th class="tg-0lax"><span style="font-weight:bold">UF2</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="tg-hmp3"><span style="font-weight:400;font-style:normal;text-decoration:none"><a
+                  href="https://tinygs.com" target="_blank" rel="noopener noreferrer">TinyGS: Open Ground Station
+                  Network</a></span></td>
+            <td class="tg-j0tj">2403241</td>
+            <td class="tg-j0tj"><a href="/uf2s/tinygs.uf2" target="_blank" rel="noopener noreferrer"><img
+                  class="contain" width="*" src="files/dl.svg" /></a></td>
+          </tr>
+          <tr>
+            <td class="tg-hmp3"><span style="font-weight:400;font-style:normal;text-decoration:none"><a
+                  href="https://micropython.org" target="_blank" rel="noopener noreferrer">MicroPython</a></span></td>
+            <td class="tg-j0tj">1.23.0</td>
+            <td class="tg-j0tj"><a href="/uf2s/micropython.uf2" target="_blank" rel="noopener noreferrer"><img
+                  class="contain" src="files/dl.svg" /></a></td>
+          </tr>
+          <tr>
+            <td class="tg-hmp3"><span style="font-weight:400;font-style:normal;text-decoration:none"><a
+                  href="https://en.wikipedia.org/wiki/I²C" target="_blank" rel="noopener noreferrer">I²C Scanner</a></span></td>
+            <td class="tg-j0tj">1.0</td>
+            <td class="tg-j0tj"><a href="/uf2s/I2C-Scanner.uf2" target="_blank" rel="noopener noreferrer"><img
+                  class="contain" src="files/dl.svg" /></a></td>
+          </tr>
+          <tr>
+            <td class="tg-hmp3"><span style="font-weight:400;font-style:normal;text-decoration:none"><a
+                  href="https://maxiq.space/stater-kit" target="_blank" rel="noopener noreferrer">Starter</a></span></td>
+            <td class="tg-j0tj">1.0</td>
+            <td class="tg-j0tj"><a href="/uf2s/STARTER.uf2" target="_blank" rel="noopener noreferrer"><img
+                  class="contain" src="files/dl.svg" /></a></td>
+          </tr>
+          <tr>
+            <td class="tg-hmp3"><span style="font-weight:400;font-style:normal;text-decoration:none"><a
+                  href="https://maxiq.space/quesst" target="_blank" rel="noopener noreferrer">QUESST</a></span></td>
+            <td class="tg-j0tj">1.0</td>
+            <td class="tg-j0tj"><a href="/uf2s/QUESST.uf2" target="_blank" rel="noopener noreferrer"><img
+                  class="contain" src="files/dl.svg" /></a></td>
+          </tr>
+          <tr>
+            <td class="tg-hmp3"><span style="font-weight:400;font-style:normal;text-decoration:none"><a
+                  href="https://maxiq.space/ISS" target="_blank" rel="noopener noreferrer">ISS</a></span></td>
+            <td class="tg-j0tj">1.0</td>
+            <td class="tg-j0tj"><a href="/uf2s/ISS.uf2" target="_blank" rel="noopener noreferrer"><img
+                  class="contain" src="files/dl.svg" /></a></td>
+          </tr>
+        </tbody>
+      </table> -->
+    <table border="1" class="tg">
+      <thead>
+        <tr>
+          <th class="tg-0lax">Name</th>
+          <th class="tg-0lax">Version</th>
+          <th class="tg-0lax">Description</th>
+          <th class="tg-0lax">.uf2</th>
+        </tr>
+      </thead>
+      <tbody id="uf2-table-body">
+        <!-- Data will be dynamically populated here -->
+      </tbody>
+    </table>
+    <script>
+      function setManifest() {
+        var sel = document.getElementById('ver');
+        var opt = sel.options[sel.selectedIndex];
+        var m = opt.dataset.manifest;
+      }
+
+      .contain {
+        max - width: 24px;
+        max - height: 24px;
+        /*   object-fit: contain; */
+      }
+    </style >
+
+    <table border="1" class="tg">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Description</th>
+          <th>Download</th>
+        </tr>
+      </thead>
+      <tbody id="uf2-table-body">
+        <!-- Data will be dynamically populated here -->
+      </tbody>
+    </table>
+
+    <h2>Troubleshooting</h2>
+    <ol>
+      <li>If the app does not appear on the display, try clicking &#x21BB; (reset)</li>
+      <li>If you get this message:
+        <img src="files/cwa-warning.png">
+        then just ignore the message.
+      </li>
+    </ol>
+    
+    <script>
+      function setManifest() {
+        var sel = document.getElementById('ver');
+        var opt = sel.options[sel.selectedIndex];
+        var m = opt.dataset.manifest;
+      }
+
+      document.getElementById('inst').setAttribute('manifest', m);
+      document.getElementById('verstr').textContent = opt.text;
+
+
+      function checkSupported() {
+        if (document.getElementById('inst').hasAttribute('install-unsupported')) unsupported();
+        else setManifest();
+      }
+
+      function unsupported() {
+        document.getElementById('flasher').innerHTML = "Sorry, your browser is not yet supported!<br>Please try on Desktop Chrome or Edge.<br>"
+      }
+
+      function showSerialHelp() {
+        document.getElementById('coms').innerHTML = `Hit "Install" and select the correct COM port.<br><br>
+    You might be missing the drivers for your board.<br>
+    Here are drivers for chips commonly used in ESP boards:<br>
+    <a href="https://www.silabs.com/developers/usb-to-uart-bridge-vcp-drivers" target="_blank">CP2102 (square chip)</a><br>
+    <a href="https://github.com/nodemcu/nodemcu-devkit/tree/master/Drivers" target="_blank">CH34x (rectangular chip)</a><br><br>
+    Make sure your USB cable supports data transfer.<br><br>
+    `;
+      }
+    </script>
+
+
+  </div>
+</body>
+
+</html>
