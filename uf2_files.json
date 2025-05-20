@@ -2,14 +2,14 @@
     {
         "name": "Starter Kit",
         "version": "1.0",
-        "description": "MaxIQ Starter Application",
-        "file": "STARTER.uf2",
+        "description": "SPRINGBOT Application",
+        "file": "SPRINGBOT.uf2",
         "help_link": "https://maxiq.space/starter-help"
     },
     {
         "name": "Soil Moisture Kit",
         "version": "1.0",
-        "description": "MaxIQ Soil Moisure Application",
+        "description": "Soil Moisure Application",
         "file": "SOIL.uf2",
         "help_link": "https://maxiq.space/soil-help"
     },
@@ -22,7 +22,7 @@
     },
     {
         "name": "MicroPython",
-        "version": "v1.23.0 (2024-06-02)",
+        "version": "v1.25.0 (2025-04-15))",
         "description": "Low-level Python operating system",
         "file": "micropython.uf2",
         "help_link": "https://micropython.org"
