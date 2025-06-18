@@ -11,8 +11,11 @@
    width="63.8mm"
    height="42mm"
    class="w-100 h-100"
-   sodipodi:docname="springbot_pcb.svg"
+   sodipodi:docname="springbot-pcb.svg"
    inkscape:version="1.4 (e7c3feb1, 2024-10-09)"
+   inkscape:export-filename="springbot-pcb.png"
+   inkscape:export-xdpi="796.23828"
+   inkscape:export-ydpi="796.23828"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:xlink="http://www.w3.org/1999/xlink"
@@ -28,15 +31,15 @@
      inkscape:pagecheckerboard="0"
      inkscape:deskcolor="#d1d1d1"
      inkscape:document-units="mm"
-     inkscape:zoom="3.979508"
-     inkscape:cx="120.61793"
-     inkscape:cy="79.281158"
+     inkscape:zoom="3.8424524"
+     inkscape:cx="120.62609"
+     inkscape:cy="79.506516"
      inkscape:window-width="2560"
      inkscape:window-height="942"
      inkscape:window-x="0"
      inkscape:window-y="25"
      inkscape:window-maximized="0"
-     inkscape:current-layer="mYEGEFTKrbzsrvWQPtKi_top" />
+     inkscape:current-layer="g6806" />
   <defs
      id="defs6802">
     <style
@@ -37727,62 +37730,61 @@
     </mask>
   </defs>
   <g
-     transform="translate(0,42000) scale(1,-1)"
-     id="g6807">
+     mask="url(#mYEGEFTKrbzsrvWQPtKi_top_mech-mask)"
+     clip-path="url(#mYEGEFTKrbzsrvWQPtKi_top_outline)"
+     id="g6806"
+     transform="matrix(1,0,0,-1,0,42000)"
+     style="display:inline">
+    <rect
+       x="0"
+       y="0"
+       width="63800"
+       height="42000"
+       fill="currentColor"
+       class="mYEGEFTKrbzsrvWQPtKi_fr4"
+       id="rect6802"
+       style="display:inline;stroke:#000000;stroke-opacity:1;stroke-width:100.00000259;stroke-dasharray:none"
+       inkscape:label="Dark_Grey_PCB_Ouline" />
+    <use
+       xlink:href="#mYEGEFTKrbzsrvWQPtKi_top_copper"
+       fill="currentColor"
+       stroke="currentColor"
+       class="mYEGEFTKrbzsrvWQPtKi_cu"
+       id="use6803"
+       style="display:inline"
+       inkscape:label="Grey_Traces" />
+    <use
+       xlink:href="#mYEGEFTKrbzsrvWQPtKi_top_copper"
+       fill="currentColor"
+       stroke="currentColor"
+       class="mYEGEFTKrbzsrvWQPtKi_cf"
+       mask="url(#mYEGEFTKrbzsrvWQPtKi_top_cf-mask)"
+       id="use6804"
+       style="display:inline;fill:#a5a9b4;stroke:#a5a9b4;stroke-opacity:1;opacity:0.87070938;fill-opacity:1"
+       inkscape:label="Gold_Pads" />
     <g
-       mask="url(#mYEGEFTKrbzsrvWQPtKi_top_mech-mask)"
-       clip-path="url(#mYEGEFTKrbzsrvWQPtKi_top_outline)"
-       id="g6806">
+       mask="url(#mYEGEFTKrbzsrvWQPtKi_top_sm-mask)"
+       id="g6805"
+       style="display:inline">
       <rect
          x="0"
          y="0"
          width="63800"
          height="42000"
          fill="currentColor"
-         class="mYEGEFTKrbzsrvWQPtKi_fr4"
-         id="rect6802"
-         style="display:inline"
-         inkscape:label="Dark_Grey_PCB_Ouline" />
-      <use
-         xlink:href="#mYEGEFTKrbzsrvWQPtKi_top_copper"
-         fill="currentColor"
-         stroke="currentColor"
-         class="mYEGEFTKrbzsrvWQPtKi_cu"
-         id="use6803"
-         style="display:inline"
-         inkscape:label="Grey_Traces" />
-      <use
-         xlink:href="#mYEGEFTKrbzsrvWQPtKi_top_copper"
-         fill="currentColor"
-         stroke="currentColor"
-         class="mYEGEFTKrbzsrvWQPtKi_cf"
-         mask="url(#mYEGEFTKrbzsrvWQPtKi_top_cf-mask)"
-         id="use6804"
-         style="display:inline"
-         inkscape:label="Gold_Pads" />
-      <g
-         mask="url(#mYEGEFTKrbzsrvWQPtKi_top_sm-mask)"
-         id="g6805"
-         style="display:inline">
-        <rect
-           x="0"
-           y="0"
-           width="63800"
-           height="42000"
-           fill="currentColor"
-           class="mYEGEFTKrbzsrvWQPtKi_sm"
-           id="rect6804"
-           style="display:inline"
-           inkscape:label="White_cover" />
-        <use
-           xlink:href="#mYEGEFTKrbzsrvWQPtKi_top_silkscreen"
-           fill="currentColor"
-           stroke="currentColor"
-           class="mYEGEFTKrbzsrvWQPtKi_ss"
-           id="use6805"
-           style="display:inline;fill:#000000"
-           inkscape:label="Black_Text" />
-      </g>
+         class="mYEGEFTKrbzsrvWQPtKi_sm"
+         id="rect6804"
+         style="display:inline;opacity:0.90045767;stroke-width:1000.0000153;stroke-dasharray:none;stroke:none;stroke-opacity:1"
+         inkscape:label="White_cover" />
     </g>
+    <use
+       xlink:href="#mYEGEFTKrbzsrvWQPtKi_top_silkscreen"
+       fill="currentColor"
+       stroke="currentColor"
+       class="mYEGEFTKrbzsrvWQPtKi_ss"
+       id="use6805"
+       style="display:inline;fill:#000000;opacity:1"
+       inkscape:label="Black_Text"
+       transform="translate(0,-0.00129871)" />
   </g>
 </svg>
