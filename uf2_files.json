@@ -1,14 +1,14 @@
 [
     {
         "name": "Starter Kit",
-        "version": "1.0",
+        "version": "1.3",
         "description": "SPRINGBOT Application",
         "file": "SPRINGBOT.uf2",
         "help_link": "https://springbot.co.za"
     },
     {
         "name": "MicroPython",
-        "version": "v1.25.0 (2025-04-15))",
+        "version": "v1.26.1 (2025-09-11)",
         "description": "Low-level Python operating system",
         "file": "micropython.uf2",
         "help_link": "https://micropython.org"
