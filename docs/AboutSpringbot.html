@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Springbot Utility</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell,
+                'Open Sans', 'Helvetica Neue', sans-serif;
+            line-height: 1.5;
+            margin: 0;
+            padding: 1em;
+        }
+        h1 {
+            font-size: 1.6em;
+            margin-top: 0;
+        }
+        h2 {
+            font-size: 1.3em;
+            margin-top: 1em;
+        }
+        p {
+            margin: 0.5em 0;
+        }
+        ul {
+            margin: 0.5em 0 0.5em 1.2em;
+            padding: 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>About Springbot Utility</h1>
+
+    <p><strong>Springbot Utility</strong> is a companion application for configuring and commissioning Springbot devices. A Springbot is a small controller built around the Espressif ESP32‑S2 microcontroller with an attached <abbr title="Inter‑Integrated Circuit">I²C</abbr> NFC tag (STMicroelectronics’ ST25DV). Springbots sense environmental conditions and post telemetry data to an MQTT broker where you can explore it in Kibana/Elasticsearch dashboards.</p>
+
+    <p>The Springbot reads its configuration from its NFC tag on start‑up. Writing that configuration manually or through WiFiManager can be error‑prone and time consuming. Springbot Utility uses Apple’s Core NFC framework to communicate with the ST25DV tag. It writes configuration records and returns the tag’s unique identifier, all with a simple tap.</p>
+
+    <h2>Key Features</h2>
+    <ul>
+        <li><strong>Format a Springbot tag:</strong> Prepare the ST25DV tag for use and optionally turn on the Springbot’s LED. Formatting wipes any previous contents and writes a known structure to the tag.</li>
+        <li><strong>Configure Wi‑Fi credentials:</strong> Specify the Wi‑Fi SSID and password that the Springbot should use. The app packages these values into a Wi‑Fi Simple Configuration token and writes it to the tag. You can also assign a friendly name (e.g. <code>Unit #12</code>) and the app will increment the number automatically for subsequent devices.</li>
+        <li><strong>Copy device identifiers:</strong> After formatting or writing, the app displays the Springbot’s UID (8‑byte hex string) and allows you to copy it to the clipboard for record‑keeping or dashboard mapping.</li>
+        <li><strong>Optional Shortcuts integration:</strong> When enabled, the app triggers your custom “Springbot” iOS Shortcut after successfully writing Wi‑Fi credentials. The shortcut receives the device UID and name in one string, so it can register the Springbot with your MQTT broker, update a Kibana index or perform any additional automation you’ve defined. Launching Shortcuts uses <code>shortcuts://</code> URLs and does not require special entitlements.</li>
+        <li><strong>Setup page:</strong> Save default SSID, password and organisation values using <code>@AppStorage</code>, so you don’t have to enter them each time.</li>
+        <li><strong>Information section:</strong> Access this page, view the privacy policy and end‑user licence agreement, send feedback via email or rate the app on the App Store.</li>
+    </ul>
+
+    <h2>Privacy &amp; Data Use</h2>
+    <p>Springbot Utility does not collect personal data or track you. It only reads from and writes to the attached NFC tag. The configuration values you enter are stored on your device using persistent storage and transmitted to the Springbot over NFC. When you use the Mail or App Store links, those interactions are handled by Apple’s own applications.</p>
+
+    <p>This app is built by the Springbot community to make setting up ESP32‑S2 based devices straightforward. By using NFC instead of captive portals or recompiling code, you can commission multiple Springbots quickly and reliably.</p>
+</body>
+</html>
