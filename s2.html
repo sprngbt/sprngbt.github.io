@@ -152,13 +152,12 @@
 <body onload="checkSupported()">
   <div class="main">
     <h2>Welcome to the Springbot bootloader installer!</h2>
-    <a href=s2.html"><h4>Click here Springbot bootloader installer version S2!</h4></a>
 
     <div id="flasher">
       <!--Symbols:  https://www.w3schools.com/charsets/ref_utf_symbols.asp -->
       <ol>
-        <li>Plug your Springbot into a USB-C port. </li>
-        <li id="coms">Hit on of the buttons below and select the correct serial port.
+        <li>Plug your Springbot into a USB-C port. This will install the bootloader to it.</li>
+        <li id="coms">Hit "Install" and select the correct serial port.
           <!-- 	  <a onclick="showSerialHelp()">No device found?</a> -->
         </li>
         <li>If connection is troublesome, put the Springbot into download mode - on the back of the Springbot:
@@ -166,43 +165,42 @@
             <li>Press and keep holding &#x25B6; down</li>
             <li>Press &#x21BB;</li>
             <li>Release &#x25B6;</li>
+            <!----
             <li>
               <font color="#f00">&#x2600;</font> will continuously illuminate.
             </li>
+          -->
           </ul>
+        </li>
+        <li>Click on &#x21BB; after successful install. A "SPRINGBOT" drive will appear on your computer, <font color="#0f0">
+            &#x2600;</font> will continuously illuminate.
+          and <font color="#f00">&#x2600;</font> will pulse. 
         </li>
       </ol><br><br>
 
 
       <div class="container inst-button">
-        <esp-web-install-button id="inst" manifest="/files/manifest_microblocks_green.json">
-          <button class="btn" slot="activate">MicroBlocks Green v386</button>
+        <esp-web-install-button id="inst" manifest="/files/manifest.json">
+          <button class="btn" slot="activate">Install</button>
         </esp-web-install-button><br>
       </div>
-
-      <div class="container inst-button">
-        <esp-web-install-button id="inst" manifest="/files/manifest_microblocks_gold.json">
-          <button class="btn" slot="activate">MicroBlocks Gold v386</button>
-        </esp-web-install-button><br>
-      </div>
-
-      <div class="container inst-button">
-        <esp-web-install-button id="inst" manifest="/files/manifest_starterkit.json">
-          <button class="btn" slot="activate">Starter Kit v1.4</button>
-        </esp-web-install-button><br>
-      </div>
-
-      <div class="container inst-button">
-        <esp-web-install-button id="inst" manifest="/files/manifest_micropython.json">
-          <button class="btn" slot="activate">MicroPython v1.27</button>
-        </esp-web-install-button><br>
-      </div>
-
-
     </div>
+    <br><br>
+    <h2>List of projects of readymade apps</h2>
 
+    <div id="flasher">
 
-
+      <ol>
+        <li>Connect your Springbot to your computer via the USB-C port.</li>
+        <li>Click on the link to download the apps file</li>
+        <li>Double-click on &#x21BB; to put your Springbot in UF2 mode. A "SPRINGBOT" drive will appear on your computer, <font
+            color="#0f0">&#x2600;</font> will continuously
+          illuminate and <font color="#f00">&#x2600;</font> will pulse.
+        </li>
+        <li>Drag-and-drop the apps file to the SPRINGBOT drive. The core will execute the project immediately.</li>
+        <li>Alternatively you can right-clink on the link, choose "Save Link As..." and point to the SPRINGBOT drive.</li>
+      </ol><br><br>
+    </div>
 
 
 
@@ -260,6 +258,19 @@
       }
     </style>
    
+    <table border="1" class="tg">
+      <thead>
+        <tr>
+          <th class="tg-0lax">Name</th>
+          <th class="tg-0lax">Version</th>
+          <th class="tg-0lax">Description</th>
+          <th class="tg-0lax">App</th>
+        </tr>
+      </thead>
+      <tbody id="uf2-table-body">
+        <!-- Data will be dynamically populated here -->
+      </tbody>
+    </table>
     <script>
       function setManifest() {
         var sel = document.getElementById('ver');
@@ -274,6 +285,27 @@
       }
     </style >
 
+    <table border="1" class="tg">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Description</th>
+          <th>Download</th>
+        </tr>
+      </thead>
+      <tbody id="uf2-table-body">
+        <!-- Data will be dynamically populated here -->
+      </tbody>
+    </table>
+
+    <h2>Troubleshooting</h2>
+    <ol>
+      <li>If the app does not appear on the display, try clicking &#x21BB; (reset)</li>
+      <li>If you get this message:
+        <img src="files/cwa-warning.png">
+        then just ignore the message.
+      </li>
+    </ol>
     
     <script>
       function setManifest() {
