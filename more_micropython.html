@@ -589,8 +589,8 @@ print("Phototransistor Value:", phototransistor.read())</code></pre>
 import time
 
 # Define GPIO pin numbers
-colPins = [Pin(i, Pin.OUT) for i in (3, 42, 41, 6, 7)]
-rowPins = [Pin(i, Pin.OUT) for i in (8, 9, 10, 14, 33)]
+colPins = [Pin(i, Pin.OUT) for i in (3, 2, 14, 15, 16)]
+rowPins = [Pin(i, Pin.OUT) for i in (8, 17, 10, 38, 6)]
 
 def clear():
     for c in colPins:
