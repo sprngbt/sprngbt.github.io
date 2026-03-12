@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Springbot Starter Kit</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --bg-soft: #111827;
+      --panel: #1e293b;
+      --panel-2: #0b1220;
+      --text: #e5e7eb;
+      --muted: #94a3b8;
+      --accent: #38bdf8;
+      --accent-2: #22c55e;
+      --border: rgba(148, 163, 184, 0.18);
+      --code-bg: #020617;
+      --code-text: #dbeafe;
+      --shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+      --radius: 18px;
+      --maxw: 1100px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+        "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background:
+        radial-gradient(circle at top right, rgba(56, 189, 248, 0.16), transparent 22rem),
+        radial-gradient(circle at top left, rgba(34, 197, 94, 0.10), transparent 18rem),
+        linear-gradient(180deg, #020617 0%, #0f172a 100%);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .container {
+      width: min(100% - 2rem, var(--maxw));
+      margin: 0 auto;
+    }
+
+    header.hero {
+      padding: 4rem 0 2rem;
+    }
+
+    .hero-card {
+      background: linear-gradient(180deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.96));
+      border: 1px solid var(--border);
+      border-radius: 28px;
+      padding: 2.25rem;
+      box-shadow: var(--shadow);
+    }
+
+    .eyebrow {
+      display: inline-block;
+      font-size: 0.85rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--accent);
+      font-weight: 700;
+      margin-bottom: 0.75rem;
+    }
+
+    h1 {
+      margin: 0 0 0.75rem;
+      font-size: clamp(2rem, 4vw, 3.4rem);
+      line-height: 1.05;
+    }
+
+    .lead {
+      margin: 0;
+      color: var(--muted);
+      font-size: 1.05rem;
+      max-width: 75ch;
+    }
+
+    .hero-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.8rem;
+      margin-top: 1.5rem;
+    }
+
+    .hero-links a {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      padding: 0.8rem 1rem;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.75);
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    .hero-links a:hover {
+      text-decoration: none;
+      border-color: rgba(56, 189, 248, 0.45);
+      background: rgba(30, 41, 59, 0.95);
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 1.5rem;
+      padding: 1rem 0 3rem;
+    }
+
+    aside.toc {
+      position: sticky;
+      top: 1rem;
+      align-self: start;
+      background: rgba(11, 18, 32, 0.8);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+    }
+
+    .toc h2 {
+      font-size: 0.95rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      margin: 0 0 0.8rem;
+    }
+
+    .toc nav {
+      display: grid;
+      gap: 0.35rem;
+    }
+
+    .toc a {
+      color: var(--text);
+      padding: 0.45rem 0.55rem;
+      border-radius: 10px;
+      font-size: 0.95rem;
+    }
+
+    .toc a:hover {
+      background: rgba(56, 189, 248, 0.10);
+      text-decoration: none;
+    }
+
+    main.content {
+      display: grid;
+      gap: 1.25rem;
+    }
+
+    section.card {
+      background: linear-gradient(180deg, rgba(30, 41, 59, 0.92), rgba(11, 18, 32, 0.94));
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.35rem;
+      box-shadow: var(--shadow);
+    }
+
+    section.card h2 {
+      margin: 0 0 0.35rem;
+      font-size: 1.45rem;
+    }
+
+    section.card p {
+      margin: 0.5rem 0 0;
+      color: var(--muted);
+    }
+
+    .note {
+      margin-top: 1rem;
+      padding: 0.9rem 1rem;
+      border-left: 4px solid var(--accent-2);
+      background: rgba(34, 197, 94, 0.08);
+      border-radius: 12px;
+      color: var(--text);
+    }
+
+    .warning {
+      margin-top: 1rem;
+      padding: 0.9rem 1rem;
+      border-left: 4px solid #f59e0b;
+      background: rgba(245, 158, 11, 0.08);
+      border-radius: 12px;
+      color: var(--text);
+    }
+
+    .tag-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.55rem;
+      margin-top: 0.9rem;
+    }
+
+    .tag {
+      display: inline-block;
+      padding: 0.35rem 0.7rem;
+      border-radius: 999px;
+      background: rgba(56, 189, 248, 0.10);
+      color: #bae6fd;
+      border: 1px solid rgba(56, 189, 248, 0.18);
+      font-size: 0.86rem;
+      font-weight: 600;
+    }
+
+    .sensor-grid,
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 0.9rem;
+      margin-top: 1rem;
+    }
+
+    .info-card {
+      background: rgba(2, 6, 23, 0.55);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1rem;
+    }
+
+    .info-card h3 {
+      margin: 0 0 0.45rem;
+      font-size: 1.05rem;
+      color: #f8fafc;
+    }
+
+    .info-card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.96rem;
+    }
+
+    .steps {
+      margin: 1rem 0 0;
+      padding-left: 1.2rem;
+    }
+
+    .steps li {
+      margin: 0.55rem 0;
+      color: var(--text);
+    }
+
+    .image-placeholder {
+      margin-top: 1rem;
+      border: 1px solid rgba(56, 189, 248, 0.20);
+      border-radius: 16px;
+      background: rgba(2, 6, 23, 0.4);
+      padding: 1rem;
+    }
+
+    .image-placeholder img {
+      display: block;
+      width: 100%;
+      max-width: 720px;
+      height: auto;
+      margin: 0 auto;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+    }
+
+    footer {
+      padding: 0 0 3rem;
+      color: var(--muted);
+      text-align: center;
+      font-size: 0.95rem;
+    }
+
+    @media (max-width: 900px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      aside.toc {
+        position: static;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <div class="container">
+      <div class="hero-card">
+        <div class="eyebrow">Starter Guide</div>
+        <h1>Springbot Starter Kit</h1>
+        <p class="lead">
+          A quick introduction to what the Springbot does when first powered up, which sensors are included, how logging works, and how to configure Wi-Fi and view dashboard data.
+        </p>
+
+        <div class="hero-links">
+          <a href="https://apps.apple.com/app/id6753171341" target="_blank" rel="noopener noreferrer">
+            Springbot Utility for iOS
+          </a>
+          <a href="https://data.springbot.co.za" target="_blank" rel="noopener noreferrer">
+            Springbot Dashboard
+          </a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="layout">
+      <aside class="toc">
+        <h2>Contents</h2>
+        <nav>
+          <a href="#startup">First Startup</a>
+          <a href="#sensors">Included Sensors</a>
+          <a href="#logging">SD Card Logging</a>
+          <a href="#buttons">Buttons A and B</a>
+          <a href="#gold">Gold Version and NFC</a>
+          <a href="#wifi">Wi-Fi Setup</a>
+          <a href="#dashboard">Viewing Data</a>
+        </nav>
+      </aside>
+
+      <main class="content">
+        <section class="card" id="startup">
+          <h2>First Startup</h2>
+          <p>
+            When the Springbot is powered up for the first time, you will see a red LED on the back of the Springbot flashing slowly. This happens while the Springbot is trying to connect to Wi-Fi and, at the same time, verifying which xChips are connected to it.
+          </p>
+          <p>
+            Once it has connected, you will see the Springbot logo. After that, the display will automatically scroll through different screens, showing values from the various connected sensors.
+          </p>
+
+          <div class="tag-row">
+            <span class="tag">Slow flashing red LED during startup</span>
+            <span class="tag">Wi-Fi connection check</span>
+            <span class="tag">xChip detection</span>
+            <span class="tag">Auto-scrolling sensor screens</span>
+          </div>
+        </section>
+
+        <section class="card" id="sensors">
+          <h2>Included Sensors</h2>
+          <p>
+            The default sensors available are a temperature and humidity sensor. There is also a phototransistor, also known as an analog ambient light sensor, and an IMU, which in this case is an accelerometer.
+          </p>
+
+          <div class="sensor-grid">
+            <div class="info-card">
+              <h3>Temperature</h3>
+              <p>Measures ambient temperature and shows the value on the display.</p>
+            </div>
+            <div class="info-card">
+              <h3>Humidity</h3>
+              <p>Measures relative humidity and displays it together with the environmental data.</p>
+            </div>
+            <div class="info-card">
+              <h3>Phototransistor</h3>
+              <p>Acts as an analog ambient light sensor to indicate light level.</p>
+            </div>
+            <div class="info-card">
+              <h3>IMU / Accelerometer</h3>
+              <p>Measures movement and orientation-related acceleration values.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="card" id="logging">
+          <h2>SD Card Logging</h2>
+          <p>
+            If an SD card is inserted on the back of the Springbot, the software will automatically log all sensor information to a comma-separated values file, also known as a CSV file.
+          </p>
+          <p>
+            This file can be opened in any text editor as well as in spreadsheet software such as Microsoft Excel, Apple Numbers, Google Sheets, and similar programs.
+          </p>
+
+          <div class="note">
+            Insert an SD card and logging starts automatically. The saved CSV file can be read both as plain text and in spreadsheet applications. <br />
+            Make sure the SD Card is a microSD with maximum 32GB. <br />
+            If the SD Card has been used for anything else, then it needs to be reformated, with
+            <a href="https://www.sdcard.org/downloads/formatter/" target="_blank" rel="noopener noreferrer">
+              SD Card Formatter
+            </a>
+            using the "Overwrite format" option.
+          </div>
+        </section>
+
+        <section class="card" id="buttons">
+          <h2>Buttons A and B</h2>
+          <p>
+            On the front of the Springbot, there are two buttons, A and B. You can use these buttons to scroll left and right through the screens.
+          </p>
+          <p>
+            Once you start scrolling using a button, the display will remain on the screen where you leave it and will no longer scroll automatically.
+          </p>
+
+          <div class="feature-grid">
+            <div class="info-card">
+              <h3>Button A</h3>
+              <p>Use to move through the available screens in one direction.</p>
+            </div>
+            <div class="info-card">
+              <h3>Button B</h3>
+              <p>Use to move through the available screens in the other direction.</p>
+            </div>
+            <div class="info-card">
+              <h3>Manual Hold</h3>
+              <p>After manual scrolling, the display stays on the last screen selected.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="card" id="gold">
+          <h2>Gold Version and NFC</h2>
+          <p>
+            If you have a Gold version of the Springbot, which is the version with an OLED screen on the front, that Springbot also includes an NFC chip.
+          </p>
+          <p>
+            Using the Springbot Utility, which is currently only available on iOS, you can configure the unit name, organisation, and Wi-Fi credentials.
+          </p>
+
+          <div class="note">
+            Springbot Utility:
+            <a href="https://apps.apple.com/app/id6753171341" target="_blank" rel="noopener noreferrer">
+              apps.apple.com/app/id6753171341
+            </a>
+          </div>
+
+        </section>
+
+        <section class="card" id="wifi">
+          <h2>Wi-Fi Setup</h2>
+          <p>
+            You can also configure the Wi-Fi credentials by connecting directly to the device just after rebooting the Springbot.
+          </p>
+          <p>
+            On one of the last screens, you will see the IP address and instructions on how to connect to the device to set up the Wi-Fi credentials.
+          </p>
+
+          <ol class="steps">
+            <li>Reboot the Springbot.</li>
+            <li>Wait for the startup sequence to progress through the screens.</li>
+            <li>Look for one of the last screens showing the IP address and setup instructions.</li>
+            <li>Use those instructions to connect and enter the Wi-Fi credentials.</li>
+          </ol>
+
+          <div class="warning">
+            If Wi-Fi has not yet been configured, watch the later display screens carefully so you do not miss the setup instructions.
+          </div>
+        </section>
+
+        <section class="card" id="dashboard">
+          <h2>Viewing Data on the Dashboard</h2>
+          <p>
+            Once the Wi-Fi credentials have been configured, you can connect to
+            <a href="https://data.springbot.co.za" target="_blank" rel="noopener noreferrer">data.springbot.co.za</a>
+            to view the dashboard for the data that has been logged.
+          </p>
+          <p>
+            You can find the data using the unit name that you configured with the NFC Springbot Utility.
+          </p>
+
+          <div class="note">
+            Use the configured unit name to locate the correct Springbot data on the dashboard.
+          </div>
+
+        </section>
+      </main>
+    </div>
+
+    <footer>
+      Springbot Starter Kit guide
+    </footer>
+  </div>
+</body>
+</html>

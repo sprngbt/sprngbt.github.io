@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MicroPython on Springbot</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --bg-soft: #111827;
+      --panel: #1e293b;
+      --panel-2: #0b1220;
+      --text: #e5e7eb;
+      --muted: #94a3b8;
+      --accent: #38bdf8;
+      --accent-2: #22c55e;
+      --border: rgba(148, 163, 184, 0.18);
+      --code-bg: #020617;
+      --code-text: #dbeafe;
+      --shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+      --radius: 18px;
+      --maxw: 1100px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+        "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background:
+        radial-gradient(circle at top right, rgba(56, 189, 248, 0.16), transparent 22rem),
+        radial-gradient(circle at top left, rgba(34, 197, 94, 0.10), transparent 18rem),
+        linear-gradient(180deg, #020617 0%, #0f172a 100%);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .container {
+      width: min(100% - 2rem, var(--maxw));
+      margin: 0 auto;
+    }
+
+    header.hero {
+      padding: 4rem 0 2rem;
+    }
+
+    .hero-card {
+      background: linear-gradient(180deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.96));
+      border: 1px solid var(--border);
+      border-radius: 28px;
+      padding: 2.25rem;
+      box-shadow: var(--shadow);
+    }
+
+    .eyebrow {
+      display: inline-block;
+      font-size: 0.85rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--accent);
+      font-weight: 700;
+      margin-bottom: 0.75rem;
+    }
+
+    h1 {
+      margin: 0 0 0.75rem;
+      font-size: clamp(2rem, 4vw, 3.4rem);
+      line-height: 1.05;
+    }
+
+    .lead {
+      margin: 0;
+      color: var(--muted);
+      font-size: 1.05rem;
+      max-width: 75ch;
+    }
+
+    .hero-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.8rem;
+      margin-top: 1.5rem;
+    }
+
+    .hero-links a {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      padding: 0.8rem 1rem;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.75);
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    .hero-links a:hover {
+      text-decoration: none;
+      border-color: rgba(56, 189, 248, 0.45);
+      background: rgba(30, 41, 59, 0.95);
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 1.5rem;
+      padding: 1rem 0 3rem;
+    }
+
+    aside.toc {
+      position: sticky;
+      top: 1rem;
+      align-self: start;
+      background: rgba(11, 18, 32, 0.8);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+    }
+
+    .toc h2 {
+      font-size: 0.95rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      margin: 0 0 0.8rem;
+    }
+
+    .toc nav {
+      display: grid;
+      gap: 0.35rem;
+    }
+
+    .toc a {
+      color: var(--text);
+      padding: 0.45rem 0.55rem;
+      border-radius: 10px;
+      font-size: 0.95rem;
+    }
+
+    .toc a:hover {
+      background: rgba(56, 189, 248, 0.10);
+      text-decoration: none;
+    }
+
+    main.content {
+      display: grid;
+      gap: 1.25rem;
+    }
+
+    section.card {
+      background: linear-gradient(180deg, rgba(30, 41, 59, 0.92), rgba(11, 18, 32, 0.94));
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.35rem;
+      box-shadow: var(--shadow);
+    }
+
+    section.card h2 {
+      margin: 0 0 0.35rem;
+      font-size: 1.45rem;
+    }
+
+    section.card p {
+      margin: 0.4rem 0 0;
+      color: var(--muted);
+    }
+
+    .note {
+      margin-top: 0.9rem;
+      padding: 0.9rem 1rem;
+      border-left: 4px solid var(--accent-2);
+      background: rgba(34, 197, 94, 0.08);
+      border-radius: 12px;
+      color: var(--text);
+    }
+
+    .subblock {
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .subblock h3 {
+      margin: 0 0 0.45rem;
+      font-size: 1.05rem;
+      color: #f8fafc;
+    }
+
+    .meta {
+      margin-top: 0.45rem;
+      font-size: 0.95rem;
+      color: var(--muted);
+    }
+
+    .code-block {
+      position: relative;
+      margin-top: 0.9rem;
+    }
+
+    pre {
+      margin: 0;
+      padding: 1rem;
+      padding-top: 3.3rem;
+      overflow-x: auto;
+      border-radius: 14px;
+      background: var(--code-bg);
+      border: 1px solid rgba(56, 189, 248, 0.10);
+      color: var(--code-text);
+      font-size: 0.92rem;
+      line-height: 1.5;
+      tab-size: 4;
+    }
+
+    code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+        "Courier New", monospace;
+    }
+
+    .copy-btn {
+      position: absolute;
+      top: 0.7rem;
+      right: 0.7rem;
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      background: rgba(15, 23, 42, 0.9);
+      color: var(--text);
+      padding: 0.42rem 0.75rem;
+      border-radius: 10px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s ease, border-color 0.2s ease, transform 0.1s ease;
+    }
+
+    .copy-btn:hover {
+      background: rgba(30, 41, 59, 0.98);
+      border-color: rgba(56, 189, 248, 0.5);
+    }
+
+    .copy-btn:active {
+      transform: scale(0.98);
+    }
+
+    .copy-btn.copied {
+      background: rgba(34, 197, 94, 0.16);
+      border-color: rgba(34, 197, 94, 0.45);
+      color: #dcfce7;
+    }
+
+    .tag-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.55rem;
+      margin-top: 0.9rem;
+    }
+
+    .tag {
+      display: inline-block;
+      padding: 0.35rem 0.7rem;
+      border-radius: 999px;
+      background: rgba(56, 189, 248, 0.10);
+      color: #bae6fd;
+      border: 1px solid rgba(56, 189, 248, 0.18);
+      font-size: 0.86rem;
+      font-weight: 600;
+    }
+
+    footer {
+      padding: 0 0 3rem;
+      color: var(--muted);
+      text-align: center;
+      font-size: 0.95rem;
+    }
+
+    @media (max-width: 900px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      aside.toc {
+        position: static;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <div class="container">
+      <div class="hero-card">
+        <div class="eyebrow">Reference Guide</div>
+        <h1>MicroPython on Springbot</h1>
+        <p class="lead">
+          Practical MicroPython examples for Springbot hardware, including I2C, SD card,
+          NeoPixel, LED, touch, OLED, buttons, buzzer, sensors, Wi-Fi, time sync, and IMU access.
+        </p>
+
+        <div class="hero-links">
+          <a href="https://github.com/domino4com/CWS" target="_blank" rel="noopener noreferrer">
+            Springbot pin definitions
+          </a>
+          <a href="https://docs.micropython.org/en/latest/esp32/quickref.html" target="_blank" rel="noopener noreferrer">
+            ESP32 MicroPython quick reference
+          </a>
+          <a href="https://github.com/domino4com/CWS#i2c-addresses-in-use" target="_blank" rel="noopener noreferrer">
+            I2C addresses in use
+          </a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="layout">
+      <aside class="toc">
+        <h2>Contents</h2>
+        <nav>
+          <a href="#i2c">I2C</a>
+          <a href="#sd">SD Card</a>
+          <a href="#neopixel">NeoPixel</a>
+          <a href="#led">LED</a>
+          <a href="#touch">Touch</a>
+          <a href="#oled">OLED</a>
+          <a href="#play-button">Play &#x25B6; Button</a>
+          <a href="#buzzer">Buzzer</a>
+          <a href="#phototransistor">Phototransistor / Lux</a>
+          <a href="#led-matrix">5×5 LED Matrix</a>
+          <a href="#wifi-time">Wi-Fi and Real Time</a>
+          <a href="#imu">IMU</a>
+          <a href="#temp-humidity">Temperature / Humidity</a>
+          <a href="#nfc">NFC (Gold only)</a>
+        </nav>
+      </aside>
+
+      <main class="content">
+        <section class="card" id="i2c">
+          <h2>I2C</h2>
+          <p>Examples using both <code>SoftI2C</code> and hardware <code>I2C</code>.</p>
+          <div class="tag-row">
+            <span class="tag">SCL = GPIO4</span>
+            <span class="tag">SDA = GPIO5</span>
+          </div>
+
+          <div class="subblock">
+            <h3>SoftI2C</h3>
+            <div class="code-block">
+              <button class="copy-btn" type="button">Copy</button>
+              <pre><code>from machine import Pin, SoftI2C
+i2c = SoftI2C(scl=Pin(4), sda=Pin(5), freq=100000)
+i2c.scan()              # scan for devices</code></pre>
+            </div>
+            <div class="meta">Output: <code>[31, 45, 56, 60, 83, 87]</code></div>
+          </div>
+
+          <div class="subblock">
+            <h3>Hardware I2C</h3>
+            <div class="code-block">
+              <button class="copy-btn" type="button">Copy</button>
+              <pre><code>from machine import Pin, I2C
+i2c = I2C(scl=Pin(4), sda=Pin(5), freq=400000)
+devices = i2c.scan()
+print("I2C devices found:", [hex(addr) for addr in devices])</code></pre>
+            </div>
+            <div class="meta">Output: <code>I2C devices found: ['0x1f', '0x2d', '0x38', '0x3c', '0x53', '0x57']</code></div>
+          </div>
+
+          <div class="note">
+            Find I2C address usage here:
+            <a href="https://github.com/domino4com/CWS#i2c-addresses-in-use" target="_blank" rel="noopener noreferrer">
+              github.com/domino4com/CWS#i2c-addresses-in-use
+            </a>
+          </div>
+        </section>
+
+        <section class="card" id="sd">
+          <h2>SD Card</h2>
+          <p>Examples for standard SPI SD as well as 1-bit and 4-bit MMC modes.</p>
+
+          <div class="subblock">
+            <h3>Standard SPI SD</h3>
+            <div class="code-block">
+              <button class="copy-btn" type="button">Copy</button>
+              <pre><code>import machine, os, vfs
+sd = machine.SDCard(slot=3, sck=36, miso=37, mosi=35, cs=34)
+vfs.mount(sd, '/sd') # mount
+os.listdir('/sd')    # list directory contents
+vfs.umount('/sd')    # eject</code></pre>
+            </div>
+          </div>
+
+          <div class="subblock">
+            <h3>1-bit MMC</h3>
+            <div class="code-block">
+              <button class="copy-btn" type="button">Copy</button>
+              <pre><code>import machine, os, vfs
+sd = machine.SDCard(slot=1, width=1, sck=36, cmd=35, data=(37,))
+vfs.mount(sd, '/sd') # mount
+os.listdir('/sd')    # list directory contents
+vfs.umount('/sd')    # eject</code></pre>
+            </div>
+          </div>
+
+          <div class="subblock">
+            <h3>4-bit MMC (Gold only)</h3>
+            <div class="code-block">
+              <button class="copy-btn" type="button">Copy</button>
+              <pre><code>import machine, os, vfs
+sd = machine.SDCard(slot=1, width=4, sck=36, cmd=35, data=(37, 16, 15, 34))
+vfs.mount(sd, '/sd') # mount
+os.listdir('/sd')    # list directory contents
+vfs.umount('/sd')    # eject</code></pre>
+            </div>
+          </div>
+        </section>
+
+        <section class="card" id="neopixel">
+          <h2>NeoPixel</h2>
+          <p>Control the onboard NeoPixel.</p>
+          <div class="tag-row">
+            <span class="tag">GPIO39</span>
+            <span class="tag">1 pixel</span>
+          </div>
+          <div class="code-block">
+            <button class="copy-btn" type="button">Copy</button>
+            <pre><code>from machine import Pin
+from neopixel import NeoPixel
+from time import sleep
+
+pin = Pin(39, Pin.OUT)
+np = NeoPixel(pin, 1)
+
+np[0] = (255, 255, 255)  # white
+np.write()
+
+r, g, b = np[0]
+
+sleep(1)
+np[0] = (0, 0, 0)
+np.write()</code></pre>
+          </div>
+        </section>
+
+        <section class="card" id="led">
+          <h2>LED</h2>
+          <p>Basic digital output control for the LED.</p>
+          <div class="tag-row">
+            <span class="tag">GPIO40</span>
+          </div>
+          <div class="code-block">
+            <button class="copy-btn" type="button">Copy</button>
+            <pre><code>from machine import Pin
+from time import sleep
+
+led = Pin(40, Pin.OUT)
+
+led.on()
+sleep(1)
+
+led.off()
+sleep(1)
+
+led.value(1)
+sleep(1)
+
+led.value(0)</code></pre>
+          </div>
+        </section>
+
+        <section class="card" id="touch">
+          <h2>Touch</h2>
+          <p>Touch inputs for A, B, and Logo.</p>
+          <div class="code-block">
+            <button class="copy-btn" type="button">Copy</button>
+            <pre><code>from machine import TouchPad, Pin
+
+t = TouchPad(Pin(11))  # A
+# t = TouchPad(Pin(12))  # B
+# t = TouchPad(Pin(13))  # Logo
+
+t.read()</code></pre>
+          </div>
+        </section>
+
+        <section class="card" id="oled">
+          <h2>OLED</h2>
+          <p>Using an SSD1306 OLED display with MicroPython.</p>
+
+          <div class="note">
+            Setup:
+            <br />• Download:
+            <a href="https://github.com/stechiez/esp32-upython" target="_blank" rel="noopener noreferrer">
+              github.com/stechiez/esp32-upython
+            </a>
+            <br />• Copy <code>ssd1306.py</code> to your <code>mu_code</code> folder
+            <br />• In Mu Editor, copy <code>ssd1306.py</code> to the Springbot
+          </div>
+
+          <div class="code-block">
+            <button class="copy-btn" type="button">Copy</button>
+            <pre><code>from machine import I2C
+from machine import Pin
+import ssd1306
+
+i2c = I2C(scl=Pin(4), sda=Pin(5), freq=400000)
+oled = ssd1306.SSD1306_I2C(128, 64, i2c)
+
+oled.fill(0)
+oled.text('SPRINGBOT', 0, 0)
+oled.text('  ', 0, 10)
+oled.text('OLED using', 0, 20)
+oled.text('micropython', 0, 30)
+oled.show()</code></pre>
+          </div>
+        </section>
+
+        <section class="card" id="play-button">
+          <h2>Play &#x25B6; Button</h2>
+          <p>Read the play &#x25B6; button state with pull-up enabled.</p>
+          <div class="tag-row">
+            <span class="tag">GPIO0</span>
+            <span class="tag">0 = pressed</span>
+            <span class="tag">1 = not pressed</span>
+          </div>
+          <div class="code-block">
+            <button class="copy-btn" type="button">Copy</button>
+            <pre><code>from machine import Pin
+
+play = Pin(0, Pin.IN, Pin.PULL_UP)
+print(play.value())</code></pre>
+          </div>
+        </section>
+
+        <section class="card" id="buzzer">
+          <h2>Buzzer</h2>
+          <p>Simple PWM example for the buzzer.</p>
+          <div class="tag-row">
+            <span class="tag">GPIO33</span>
+          </div>
+          <div class="code-block">
+            <button class="copy-btn" type="button">Copy</button>
+            <pre><code>from machine import Pin, PWM
+from time import sleep
+
+buz = PWM(Pin(33), freq=4000)
+sleep(1)
+buz.deinit()</code></pre>
+          </div>
+        </section>
+
+        <section class="card" id="phototransistor">
+          <h2>Phototransistor / Lux</h2>
+          <p>Read the analog light level.</p>
+          <div class="tag-row">
+            <span class="tag">GPIO7</span>
+            <span class="tag">ADC</span>
+          </div>
+          <div class="code-block">
+            <button class="copy-btn" type="button">Copy</button>
+            <pre><code>from machine import ADC, Pin
+
+phototransistor = ADC(Pin(7))
+phototransistor.atten(3)   # Full range: 0-3.6V
+print("Phototransistor Value:", phototransistor.read())</code></pre>
+          </div>
+        </section>
+
+        <section class="card" id="led-matrix">
+          <h2>5×5 LED Matrix on Green</h2>
+          <p>Test all LEDs on the 5×5 matrix.</p>
+          <div class="code-block">
+            <button class="copy-btn" type="button">Copy</button>
+            <pre><code>from machine import Pin
+import time
+
+# Define GPIO pin numbers
+colPins = [Pin(i, Pin.OUT) for i in (3, 42, 41, 6, 7)]
+rowPins = [Pin(i, Pin.OUT) for i in (8, 9, 10, 14, 33)]
+
+def clear():
+    for c in colPins:
+        c.value(1)  # columns are active-low
+    for r in rowPins:
+        r.value(0)  # rows are active-high
+
+def test_leds(delay=0.1):
+    clear()
+    for r in range(5):
+        for c in range(5):
+            clear()
+            colPins[c].value(0)  # select column
+            rowPins[r].value(1)  # select row
+            time.sleep(delay)
+    clear()
+
+while True:
+    test_leds()</code></pre>
+          </div>
+        </section>
+
+        <section class="card" id="wifi-time">
+          <h2>Wi-Fi and Real Time</h2>
+          <p>Connect to Wi-Fi, synchronize time via NTP, and print the current local time.</p>
+          <div class="code-block">
+            <button class="copy-btn" type="button">Copy</button>
+            <pre><code>import network
+import ntptime
+import time
+
+SSID = "your_wifi_ssid"
+PASSWORD = "your_wifi_password"
+
+def connect_wifi():
+    wlan = network.WLAN(network.STA_IF)
+    wlan.active(True)
+    if not wlan.isconnected():
+        print("Connecting to Wi-Fi...")
+        wlan.connect(SSID, PASSWORD)
+        while not wlan.isconnected():
+            time.sleep(0.5)
+    print("Connected. IP:", wlan.ifconfig()[0])
+
+def sync_time():
+    ntptime.settime()
+    print("Time synchronized with NTP.")
+
+def print_local_time():
+    t = time.localtime()
+    print("Current time: {:04d}-{:02d}-{:02d} {:02d}:{:02d}:{:02d}".format(
+        t[0], t[1], t[2], t[3], t[4], t[5]
+    ))
+
+connect_wifi()
+sync_time()
+print_local_time()</code></pre>
+          </div>
+        </section>
+
+        <section class="card" id="imu">
+          <h2>IMU</h2>
+          <p>KX022-1020 on address <code>0x1F</code> / <code>31</code>.</p>
+          <div class="code-block">
+            <button class="copy-btn" type="button">Copy</button>
+            <pre><code>from machine import I2C, Pin
+import time
+
+i2c = I2C(0, scl=Pin(4), sda=Pin(5), freq=400_000)
+KX022 = 0x1F
+
+# Registers
+CNTL1 = 0x18
+CNTL2 = 0x19
+CNTL3 = 0x1A
+TILT_TIMER = 0x22
+TILT_ANGLE_LL = 0x32
+TILT_ANGLE_HL = 0x33
+HYST_SET = 0x34
+TSCP = 0x10
+INS2 = 0x13
+XOUT_L = 0x06  # accel output starts here
+
+def r8(reg):
+    return i2c.readfrom_mem(KX022, reg, 1)[0]
+
+def w8(reg, v):
+    i2c.writeto_mem(KX022, reg, bytes([v]))
+
+def s16(lo, hi):
+    v = (hi << 8) | lo
+    return v - 65536 if v & 0x8000 else v
+
+# Configure Tilt Position
+w8(CNTL1, 0x00)      # standby
+w8(CNTL1, 0x41)      # standby + high-res + +/-2g + TPE enable
+w8(CNTL2, 0x3F)      # enable +/- x,y,z for tilt
+w8(CNTL3, 0x98)      # tilt position ODR = 12.5Hz
+w8(TILT_TIMER, 0x01) # ~80ms stability
+
+# Permissive thresholds
+w8(TILT_ANGLE_LL, 0x04)
+w8(TILT_ANGLE_HL, 0x08)
+w8(HYST_SET, 0x04)
+
+w8(CNTL1, 0xC1)      # operating + TPE
+time.sleep_ms(100)
+
+print("CNTL1=", hex(r8(CNTL1)), "CNTL2=", hex(r8(CNTL2)), "CNTL3=", hex(r8(CNTL3)))
+print("TILT_TIMER=", hex(r8(TILT_TIMER)), "LL=", hex(r8(TILT_ANGLE_LL)),
+      "HL=", hex(r8(TILT_ANGLE_HL)), "HYST=", hex(r8(HYST_SET)))
+
+while True:
+    tscp = r8(TSCP)
+    ins2 = r8(INS2)
+    a = i2c.readfrom_mem(KX022, XOUT_L, 6)
+    x = s16(a[0], a[1])
+    y = s16(a[2], a[3])
+    z = s16(a[4], a[5])
+
+    print("xyz=%d,%d,%d" % (x, y, z))
+    time.sleep_ms(200)</code></pre>
+          </div>
+        </section>
+
+        <section class="card" id="temp-humidity">
+          <h2>Temperature / Humidity</h2>
+          <p>AHT20 / AHT21 on <code>0x38</code>.</p>
+          <div class="code-block">
+            <button class="copy-btn" type="button">Copy</button>
+            <pre><code>from machine import I2C, Pin
+import time
+
+i2c = I2C(0, scl=Pin(4), sda=Pin(5), freq=400_000)
+AHT21_ADDR = 0x38
+
+# Trigger measurement
+i2c.writeto(AHT21_ADDR, bytes([0xAC, 0x33, 0x00]))
+time.sleep_ms(80)
+
+# Read 6 bytes
+data = i2c.readfrom(AHT21_ADDR, 6)
+
+raw_hum = ((data[1] << 16) | (data[2] << 8) | data[3]) >> 4
+raw_tmp = ((data[3] & 0x0F) << 16) | (data[4] << 8) | data[5]
+
+humidity = (raw_hum * 100) / 1048576
+temperature = (raw_tmp * 200) / 1048576 - 50
+
+print("Temp:", temperature, "°C")
+print("Hum :", humidity, "%")</code></pre>
+          </div>
+        </section>
+
+        <section class="card" id="nfc">
+          <h2>NFC</h2>
+          <p>Read the NFC UID from the system address. (Gold only)</p>
+          <div class="code-block">
+            <button class="copy-btn" type="button">Copy</button>
+            <pre><code>from machine import I2C, Pin
+
+i2c = I2C(0, scl=Pin(4), sda=Pin(5), freq=400_000)
+SYS = 0x57
+UID_ADDR = 0x0018
+UID_LEN = 8
+
+uid = i2c.readfrom_mem(SYS, UID_ADDR, UID_LEN, addrsize=16)
+print("UID (MSB-&gt;LSB, app):", bytes(reversed(uid)).hex().upper())</code></pre>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <footer>
+      MicroPython on Springbot reference page
+    </footer>
+  </div>
+
+  <script>
+    async function copyCode(button) {
+      const code = button.parentElement.querySelector('code');
+      if (!code) return;
+
+      const text = code.innerText;
+      const original = button.textContent;
+
+      try {
+        await navigator.clipboard.writeText(text);
+        button.textContent = 'Copied!';
+        button.classList.add('copied');
+      } catch (err) {
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-9999px';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        try {
+          document.execCommand('copy');
+          button.textContent = 'Copied!';
+          button.classList.add('copied');
+        } finally {
+          document.body.removeChild(textArea);
+        }
+      }
+
+      setTimeout(() => {
+        button.textContent = original;
+        button.classList.remove('copied');
+      }, 1600);
+    }
+
+    document.querySelectorAll('.copy-btn').forEach((button) => {
+      button.addEventListener('click', () => copyCode(button));
+    });
+  </script>
+</body>
+</html>

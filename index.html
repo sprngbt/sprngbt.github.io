@@ -1,313 +1,395 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="en">
 <head>
-  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-
-  <meta content="width=device-width" name="viewport">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#222222">
-  <title>Install Springbot uf2 bootloader</title>
-  <script type="module" src="https://unpkg.com/esp-web-tools@10/dist/web/install-button.js?module">
-  </script>
-  <script>
-    document.addEventListener("DOMContentLoaded", function () {
-      fetch('uf2_files.json')
-        .then(response => response.json())
-        .then(data => {
-          let tableBody = document.getElementById('uf2-table-body');
-          data.forEach(file => {
-            let row = document.createElement('tr');
-            row.innerHTML = `
-                            <td class="tg-hmp3">${file.name}</td>
-                            <td class="tg-hmp3">${file.version}</td>
-                            <td class="tg-hmp3"><a href="${file.help_link}">${file.description}</a></td>
-                            <td class="tg-j0tj"><a href="uf2s/${file.file}" target="_blank" rel="noopener noreferrer"><img class="contain" src="files/dl.svg" /></a></td>
-                        `;
-            tableBody.appendChild(row);
-          });
-        })
-        .catch(error => console.error('Error fetching the list:', error));
-    });
-  </script>
+  <title>Install Springbot Firmware</title>
+
+  <script type="module" src="https://unpkg.com/esp-web-tools@10/dist/web/install-button.js?module"></script>
+
   <style>
+    :root {
+      --bg: #1f1f1f;
+      --panel: rgba(34, 34, 34, 0.92);
+      --panel-2: rgba(44, 44, 44, 0.96);
+      --border: rgba(255, 255, 255, 0.10);
+      --text: #f2f2f2;
+      --muted: #b8b8b8;
+      --accent: #18a0fb;
+      --accent-hover: #3ab0ff;
+      --header: #2d2d2d;
+      --row: rgba(255, 255, 255, 0.03);
+      --row-hover: rgba(24, 160, 251, 0.08);
+      --shadow: 0 12px 36px rgba(0, 0, 0, 0.35);
+      --radius: 18px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+    }
+
     body {
       font-family: Verdana, Helvetica, sans-serif;
-      text-align: center;
-      background-color: #222;
-      margin: 0;
-      color: #fff;
+      color: var(--text);
+      background-color: var(--bg);
       background-image: url('/files/springbot-bok.svg');
       background-repeat: no-repeat;
-      background-position: bottom right, 10%, 10%;
+      background-position: right bottom;
+      background-size: min(38vw, 420px);
+      line-height: 1.5;
     }
 
-    select {
-      -webkit-appearance: none;
-      -moz-appearance: none;
-      appearance: none;
-      background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' fill='white'><polygon points='0,0 100,0 50,50'/></svg>") no-repeat;
-      background-size: 12px;
-      background-position: 206px 17px;
-      padding-left: 12px !important;
-      background-repeat: no-repeat;
-      outline: none;
+    a {
+      color: var(--accent);
+      text-decoration: none;
     }
 
-    select:-moz-focusring {
-      transition-duration: 0s;
-      color: transparent;
-      text-shadow: 0 0 0 #fff;
+    a:hover {
+      color: var(--accent-hover);
+      text-decoration: underline;
     }
 
-    option {
-      background-color: var(--c-3);
-      color: var(--c-f);
+    .page {
+      width: min(1100px, calc(100% - 32px));
+      margin: 32px auto 48px auto;
+      animation: fadeIn 0.8s ease;
+    }
+
+    .hero {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      padding: 28px 24px;
+      backdrop-filter: blur(6px);
+      text-align: center;
+    }
+
+    .hero h1 {
+      margin: 0 0 8px 0;
+      font-size: clamp(1.6rem, 2.5vw, 2.4rem);
+      line-height: 1.2;
+    }
+
+    .hero p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 1rem;
+    }
+
+    .switch-link {
+      display: inline-block;
+      margin-top: 14px;
+      font-weight: bold;
+    }
+
+    .section {
+      margin-top: 22px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      padding: 24px;
+      backdrop-filter: blur(6px);
+    }
+
+    .section h2 {
+      margin: 0 0 14px 0;
+      font-size: 1.2rem;
+    }
+
+    ol {
+      margin: 0;
+      padding-left: 22px;
+      color: var(--text);
+    }
+
+    li {
+      margin: 10px 0;
+    }
+
+    li::marker {
+      color: var(--accent);
+      font-weight: bold;
+    }
+
+    ul {
+      margin-top: 10px;
+      padding-left: 22px;
+    }
+
+    .sun {
+      color: #ff4d4d;
+      font-weight: bold;
+    }
+
+    .table-wrap {
+      margin-top: 24px;
+      overflow-x: auto;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: var(--panel-2);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 900px;
+    }
+
+    thead th {
+      background: var(--header);
+      color: #ffffff;
+      text-align: left;
+      font-size: 0.95rem;
+      letter-spacing: 0.02em;
+      padding: 16px 14px;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    thead th.center,
+    tbody td.center {
+      text-align: center;
+    }
+
+    tbody td {
+      padding: 14px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      vertical-align: middle;
+      background: var(--row);
+    }
+
+    tbody tr:hover td {
+      background: var(--row-hover);
+    }
+
+    tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    .name {
+      font-weight: bold;
+      color: #fff;
+    }
+
+    .version,
+    .date,
+    .more {
+      color: var(--muted);
     }
 
     .btn {
       outline: none;
       cursor: pointer;
-      padding: 8px;
-      margin: 10px;
-      width: 230px;
+      padding: 10px 18px;
+      min-width: 120px;
       font-family: Verdana, Helvetica, sans-serif;
-      font-size: 19px;
-      background-color: #333;
+      font-size: 0.95rem;
+      font-weight: bold;
+      background: linear-gradient(180deg, #2c2c2c 0%, #202020 100%);
       color: white;
-      border: 0px solid white;
-      border-radius: 25px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 999px;
+      transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+      margin: 0;
+      display: inline-block;
+      text-align: center;
     }
 
-    /*     img {
-      width: 158px;
-      max-width: 80%;
-      image-rendering: pixelated;
-      image-rendering: crisp-edges;
-      margin: 3vh 0 5px 0;
-      animation: fi 1s;
-    } */
-
-    @keyframes fi {
-      from {
-        opacity: 0;
-      }
-
-      to {
-        opacity: 1;
-      }
-    }
-
-    .main {
-      animation: fi 1.5s .7s both;
-    }
-
-    a {
-      color: #777;
-      cursor: pointer;
+    .btn:hover {
+      transform: translateY(-1px);
+      background: linear-gradient(180deg, #353535 0%, #262626 100%);
+      border-color: rgba(24, 160, 251, 0.5);
       text-decoration: none;
     }
 
-    ol {
-      margin: auto;
-      text-align: left;
-      display: inline-block;
+    .btn:active {
+      transform: translateY(0);
     }
 
-    li::marker {
-      text-decoration: bold;
-      color: #09f;
+    .footer-note {
+      margin-top: 18px;
+      color: var(--muted);
+      font-size: 0.92rem;
     }
 
-    li {
-      margin: 5px;
-    }
+    @media (max-width: 700px) {
+      .page {
+        width: calc(100% - 20px);
+        margin: 16px auto 24px auto;
+      }
 
-    .container {
-      width: 80%;
-      max-width: 510px;
-      margin: auto;
-      border-radius: 5px;
-      box-sizing: border-box;
-      background-color: #222;
-      overflow: hidden;
-    }
+      .hero,
+      .section {
+        padding: 18px;
+        border-radius: 18px;
+      }
 
-    .inst-button {
-      padding: 5px 0;
+      body {
+        background-size: 220px;
+      }
+
+      .btn {
+        min-width: 100px;
+        font-size: 0.9rem;
+        padding: 9px 14px;
+      }
     }
 
     @media (prefers-color-scheme: dark) {
       ewt-install-dialog {
-        /*--mdc-theme-primary: #ffa000; /*buttons*/
         --mdc-theme-surface: #333;
         --mdc-dialog-heading-ink-color: #fff;
         --mdc-dialog-content-ink-color: #ddd;
         --mdc-text-field-fill-color: #ddd;
       }
     }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
   </style>
-  <style></style>
+
+  <script>
+    function checkSupported() {
+      const installer = document.querySelector("esp-web-install-button");
+      if (installer && installer.hasAttribute("install-unsupported")) {
+        unsupported();
+      }
+    }
+
+    function unsupported() {
+      document.getElementById("flasher").innerHTML =
+        'Sorry, your browser is not yet supported!<br>Please try on Desktop Chrome or Edge.';
+    }
+
+    function showSerialHelp() {
+      document.getElementById("coms").innerHTML = `
+        Hit "Install" and select the correct COM port.<br><br>
+        You might be missing the drivers for your board.<br>
+        Here are drivers for chips commonly used in Springbot addon xChips:<br>
+        <a href="https://www.silabs.com/developers/usb-to-uart-bridge-vcp-drivers" target="_blank" rel="noopener noreferrer">CP2102 (square chip)</a><br>
+        <a href="https://github.com/nodemcu/nodemcu-devkit/tree/master/Drivers" target="_blank" rel="noopener noreferrer">CH34x (rectangular chip)</a><br><br>
+        Make sure your USB cable supports data transfer.<br><br>
+      `;
+    }
+  </script>
 </head>
 
 <body onload="checkSupported()">
-  <div class="main">
-    <h2>Welcome to the Springbot bootloader installer!</h2>
-    <a href=s2.html"><h4>Click here Springbot bootloader installer version S2!</h4></a>
+  <div class="page">
+    <div class="hero">
+      <h1>Welcome to the Springbot firmware installer</h1>
+      <p>Choose the correct firmware below and install it directly from your browser.</p>
+      <a class="switch-link" href="s2.html">Click here for the Springbot bootloader installer version S2</a>
+    </div>
 
-    <div id="flasher">
-      <!--Symbols:  https://www.w3schools.com/charsets/ref_utf_symbols.asp -->
+    <div id="flasher" class="section">
+      <h2>Installation steps</h2>
       <ol>
-        <li>Plug your Springbot into a USB-C port. </li>
-        <li id="coms">Hit on of the buttons below and select the correct serial port.
-          <!-- 	  <a onclick="showSerialHelp()">No device found?</a> -->
+        <li>Plug your Springbot into a USB-C port.</li>
+        <li id="coms">
+          Hit one of the install buttons below and select the correct serial port.
+          <!-- <a href="#" onclick="showSerialHelp(); return false;">No device found?</a> -->
         </li>
-        <li>If connection is troublesome, put the Springbot into download mode - on the back of the Springbot:
+        <li>
+          If connection is troublesome, put the Springbot into download mode — on the back of the Springbot:
           <ul>
             <li>Press and keep holding &#x25B6; down</li>
             <li>Press &#x21BB;</li>
             <li>Release &#x25B6;</li>
-            <li>
-              <font color="#f00">&#x2600;</font> will continuously illuminate.
-            </li>
+            <li><span class="sun">&#x2600;</span> will continuously illuminate.</li>
           </ul>
         </li>
-      </ol><br><br>
+      </ol>
 
-
-      <div class="container inst-button">
-        <esp-web-install-button id="inst" manifest="/files/manifest_microblocks_green.json">
-          <button class="btn" slot="activate">MicroBlocks Green v386</button>
-        </esp-web-install-button><br>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th class="center">Version</th>
+              <th class="center">Date</th>
+              <th class="center">Install</th>
+              <th class="center">More...</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="name">MicroBlocks Green</td>
+              <td class="version center">v386</td>
+              <td class="date center">2026-03-09</td>
+              <td class="center">
+                <esp-web-install-button manifest="/files/manifest_microblocks_green.json">
+                  <button class="btn" slot="activate">Install</button>
+                </esp-web-install-button>
+              </td>
+              <td class="more center">
+                <a class="btn" href="more_microblocks.html">More...</a>
+              </td>
+            </tr>
+            <tr>
+              <td class="name">MicroBlocks Gold</td>
+              <td class="version center">v386</td>
+              <td class="date center">2026-03-09</td>
+              <td class="center">
+                <esp-web-install-button manifest="/files/manifest_microblocks_gold.json">
+                  <button class="btn" slot="activate">Install</button>
+                </esp-web-install-button>
+              </td>
+              <td class="more center">
+                <a class="btn" href="more_microblocks.html">More...</a>
+              </td>
+            </tr>
+            <tr>
+              <td class="name">Starter Kit</td>
+              <td class="version center">v1.4</td>
+              <td class="date center">2026-03-11</td>
+              <td class="center">
+                <esp-web-install-button manifest="/files/manifest_starterkit.json">
+                  <button class="btn" slot="activate">Install</button>
+                </esp-web-install-button>
+              </td>
+              <td class="more center">
+                <a class="btn" href="more_starter_kit.html">More...</a>
+              </td>
+            </tr>
+            <tr>
+              <td class="name">MicroPython</td>
+              <td class="version center">v1.27.0</td>
+              <td class="date center">2025-12-09</td>
+              <td class="center">
+                <esp-web-install-button manifest="/files/manifest_micropython.json">
+                  <button class="btn" slot="activate">Install</button>
+                </esp-web-install-button>
+              </td>
+              <td class="more center">
+                <a class="btn" href="more_micropython.html">More...</a>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
 
-      <div class="container inst-button">
-        <esp-web-install-button id="inst" manifest="/files/manifest_microblocks_gold.json">
-          <button class="btn" slot="activate">MicroBlocks Gold v386</button>
-        </esp-web-install-button><br>
+      <div class="footer-note">
+        Use Chrome or Edge on desktop for the best chance of successful installation.
       </div>
-
-      <div class="container inst-button">
-        <esp-web-install-button id="inst" manifest="/files/manifest_starterkit.json">
-          <button class="btn" slot="activate">Starter Kit v1.4</button>
-        </esp-web-install-button><br>
-      </div>
-
-      <div class="container inst-button">
-        <esp-web-install-button id="inst" manifest="/files/manifest_micropython.json">
-          <button class="btn" slot="activate">MicroPython v1.27</button>
-        </esp-web-install-button><br>
-      </div>
-
-
     </div>
-
-
-
-
-
-
-    <style type="text/css">
-      .tg {
-        border-collapse: collapse;
-        border-color: #9ABAD9;
-        border-spacing: 0;
-        margin-left: auto;
-        margin-right: auto;
-      }
-
-      .tg td {
-        background-color: #EBF5FF;
-        border-color: #9ABAD9;
-        border-style: solid;
-        border-width: 1px;
-        color: #444;
-        font-family: Arial, sans-serif;
-        font-size: 14px;
-        overflow: hidden;
-        padding: 10px 5px;
-        word-break: normal;
-      }
-
-      .tg th {
-        background-color: #409cff;
-        border-color: #9ABAD9;
-        border-style: solid;
-        border-width: 1px;
-        color: #fff;
-        font-family: Arial, sans-serif;
-        font-size: 14px;
-        font-weight: normal;
-        overflow: hidden;
-        padding: 10px 5px;
-        word-break: normal;
-      }
-
-      .tg .tg-hmp3 {
-        background-color: #D2E4FC;
-        text-align: left;
-        vertical-align: middle
-      }
-
-      .tg .tg-0lax {
-        text-align: left;
-        vertical-align: middle
-      }
-
-      .contain {
-        max-width: 24px;
-        max-height: 24px;
-        /*   object-fit: contain; */
-      }
-    </style>
-   
-    <script>
-      function setManifest() {
-        var sel = document.getElementById('ver');
-        var opt = sel.options[sel.selectedIndex];
-        var m = opt.dataset.manifest;
-      }
-
-      .contain {
-        max - width: 24px;
-        max - height: 24px;
-        /*   object-fit: contain; */
-      }
-    </style >
-
-    
-    <script>
-      function setManifest() {
-        var sel = document.getElementById('ver');
-        var opt = sel.options[sel.selectedIndex];
-        var m = opt.dataset.manifest;
-      }
-
-      document.getElementById('inst').setAttribute('manifest', m);
-      document.getElementById('verstr').textContent = opt.text;
-
-
-      function checkSupported() {
-        if (document.getElementById('inst').hasAttribute('install-unsupported')) unsupported();
-        else setManifest();
-      }
-
-      function unsupported() {
-        document.getElementById('flasher').innerHTML = "Sorry, your browser is not yet supported!<br>Please try on Desktop Chrome or Edge.<br>"
-      }
-
-      function showSerialHelp() {
-        document.getElementById('coms').innerHTML = `Hit "Install" and select the correct COM port.<br><br>
-    You might be missing the drivers for your board.<br>
-    Here are drivers for chips commonly used in Springbot boards:<br>
-    <a href="https://www.silabs.com/developers/usb-to-uart-bridge-vcp-drivers" target="_blank">CP2102 (square chip)</a><br>
-    <a href="https://github.com/nodemcu/nodemcu-devkit/tree/master/Drivers" target="_blank">CH34x (rectangular chip)</a><br><br>
-    Make sure your USB cable supports data transfer.<br><br>
-    `;
-      }
-    </script>
-
-
   </div>
 </body>
-
 </html>
