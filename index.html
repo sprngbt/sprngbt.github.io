@@ -294,16 +294,14 @@
         warning.classList.remove("hidden");
       }
 
+      const steps = document.getElementById("installation-steps");
+      if (steps) {
+        steps.remove();
+      }
+
       document.querySelectorAll(".install-col").forEach((el) => {
         el.remove();
       });
-
-      const coms = document.getElementById("coms");
-      if (coms) {
-        coms.innerHTML =
-          'Your browser cannot install firmware directly from this page.<br>' +
-          'Please use Desktop Chrome or Edge to flash your Springbot.';
-      }
     }
 
     function showSerialHelp() {
@@ -330,23 +328,25 @@
     <div id="flasher" class="section">
       <div id="unsupported-warning" class="warning hidden"></div>
 
-      <h2>Installation steps</h2>
-      <ol>
-        <li>Plug your Springbot into a USB-C port.</li>
-        <li id="coms">
-          Hit one of the install buttons below and select the correct serial port.
-          <!-- <a href="#" onclick="showSerialHelp(); return false;">No device found?</a> -->
-        </li>
-        <li>
-          If connection is troublesome, put the Springbot into download mode — on the back of the Springbot:
-          <ul>
-            <li>Press and keep holding &#x25B6; down</li>
-            <li>Press &#x21BB;</li>
-            <li>Release &#x25B6;</li>
-            <li><span class="sun">&#x2600;</span> will continuously illuminate.</li>
-          </ul>
-        </li>
-      </ol>
+      <div id="installation-steps">
+        <h2>Installation steps</h2>
+        <ol>
+          <li>Plug your Springbot into a USB-C port.</li>
+          <li id="coms">
+            Hit one of the install buttons below and select the correct serial port.
+            <!-- <a href="#" onclick="showSerialHelp(); return false;">No device found?</a> -->
+          </li>
+          <li>
+            If connection is troublesome, put the Springbot into download mode — on the back of the Springbot:
+            <ul>
+              <li>Press and keep holding &#x25B6; down</li>
+              <li>Press &#x21BB;</li>
+              <li>Release &#x25B6;</li>
+              <li><span class="sun">&#x2600;</span> will continuously illuminate.</li>
+            </ul>
+          </li>
+        </ol>
+      </div>
 
       <div class="table-wrap">
         <table>
