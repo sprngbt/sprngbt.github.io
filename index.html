@@ -105,6 +105,15 @@
       font-size: 1.2rem;
     }
 
+    .warning {
+      margin: 0 0 18px 0;
+      padding: 14px 16px;
+      border-radius: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(255, 77, 77, 0.10);
+      color: #ffd7d7;
+    }
+
     ol {
       margin: 0;
       padding-left: 22px;
@@ -221,6 +230,10 @@
       font-size: 0.92rem;
     }
 
+    .hidden {
+      display: none !important;
+    }
+
     @media (max-width: 700px) {
       .page {
         width: calc(100% - 20px);
@@ -274,8 +287,23 @@
     }
 
     function unsupported() {
-      document.getElementById("flasher").innerHTML =
-        'Sorry, your browser is not yet supported!<br>Please try on Desktop Chrome or Edge.';
+      const warning = document.getElementById("unsupported-warning");
+      if (warning) {
+        warning.innerHTML =
+          'Sorry, your browser is not yet supported!<br>Please try on Desktop Chrome or Edge.';
+        warning.classList.remove("hidden");
+      }
+
+      document.querySelectorAll(".install-col").forEach((el) => {
+        el.remove();
+      });
+
+      const coms = document.getElementById("coms");
+      if (coms) {
+        coms.innerHTML =
+          'Your browser cannot install firmware directly from this page.<br>' +
+          'Please use Desktop Chrome or Edge to flash your Springbot.';
+      }
     }
 
     function showSerialHelp() {
@@ -300,6 +328,8 @@
     </div>
 
     <div id="flasher" class="section">
+      <div id="unsupported-warning" class="warning hidden"></div>
+
       <h2>Installation steps</h2>
       <ol>
         <li>Plug your Springbot into a USB-C port.</li>
@@ -325,7 +355,7 @@
               <th>Name</th>
               <th class="center">Version</th>
               <th class="center">Date</th>
-              <th class="center">Install</th>
+              <th class="center install-col">Install</th>
               <th class="center">More...</th>
             </tr>
           </thead>
@@ -334,7 +364,7 @@
               <td class="name">MicroBlocks Green</td>
               <td class="version center">v386</td>
               <td class="date center">2026-03-09</td>
-              <td class="center">
+              <td class="center install-col">
                 <esp-web-install-button manifest="/files/manifest_microblocks_green.json">
                   <button class="btn" slot="activate">Install</button>
                 </esp-web-install-button>
@@ -347,7 +377,7 @@
               <td class="name">MicroBlocks Gold</td>
               <td class="version center">v386</td>
               <td class="date center">2026-03-09</td>
-              <td class="center">
+              <td class="center install-col">
                 <esp-web-install-button manifest="/files/manifest_microblocks_gold.json">
                   <button class="btn" slot="activate">Install</button>
                 </esp-web-install-button>
@@ -360,7 +390,7 @@
               <td class="name">Starter Kit</td>
               <td class="version center">v1.4</td>
               <td class="date center">2026-03-11</td>
-              <td class="center">
+              <td class="center install-col">
                 <esp-web-install-button manifest="/files/manifest_starterkit.json">
                   <button class="btn" slot="activate">Install</button>
                 </esp-web-install-button>
@@ -373,7 +403,7 @@
               <td class="name">MicroPython</td>
               <td class="version center">v1.27.0</td>
               <td class="date center">2025-12-09</td>
-              <td class="center">
+              <td class="center install-col">
                 <esp-web-install-button manifest="/files/manifest_micropython.json">
                   <button class="btn" slot="activate">Install</button>
                 </esp-web-install-button>
