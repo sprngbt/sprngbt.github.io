@@ -321,6 +321,9 @@
           <a href="https://github.com/domino4com/CWS#i2c-addresses-in-use" target="_blank" rel="noopener noreferrer">
             I2C addresses in use
           </a>
+          <a href="https://thonny.org" target="_blank" rel="noopener noreferrer">
+            MicroPython IDE
+          </a>
         </div>
       </div>
     </div>
@@ -363,7 +366,7 @@
               <button class="copy-btn" type="button">Copy</button>
               <pre><code>from machine import Pin, SoftI2C
 i2c = SoftI2C(scl=Pin(4), sda=Pin(5), freq=100000)
-i2c.scan()              # scan for devices</code></pre>
+print(i2c.scan())              # scan for devices</code></pre>
             </div>
             <div class="meta">Output: <code>[31, 45, 56, 60, 83, 87]</code></div>
           </div>
@@ -399,7 +402,7 @@ print("I2C devices found:", [hex(addr) for addr in devices])</code></pre>
               <pre><code>import machine, os, vfs
 sd = machine.SDCard(slot=3, sck=36, miso=37, mosi=35, cs=34)
 vfs.mount(sd, '/sd') # mount
-os.listdir('/sd')    # list directory contents
+print(os.listdir('/sd'))    # list directory contents
 vfs.umount('/sd')    # eject</code></pre>
             </div>
           </div>
@@ -411,7 +414,7 @@ vfs.umount('/sd')    # eject</code></pre>
               <pre><code>import machine, os, vfs
 sd = machine.SDCard(slot=1, width=1, sck=36, cmd=35, data=(37,))
 vfs.mount(sd, '/sd') # mount
-os.listdir('/sd')    # list directory contents
+print(os.listdir('/sd'))    # list directory contents
 vfs.umount('/sd')    # eject</code></pre>
             </div>
           </div>
@@ -423,7 +426,7 @@ vfs.umount('/sd')    # eject</code></pre>
               <pre><code>import machine, os, vfs
 sd = machine.SDCard(slot=1, width=4, sck=36, cmd=35, data=(37, 16, 15, 34))
 vfs.mount(sd, '/sd') # mount
-os.listdir('/sd')    # list directory contents
+print(os.listdir('/sd'))    # list directory contents
 vfs.umount('/sd')    # eject</code></pre>
             </div>
           </div>
@@ -488,12 +491,15 @@ led.value(0)</code></pre>
           <div class="code-block">
             <button class="copy-btn" type="button">Copy</button>
             <pre><code>from machine import TouchPad, Pin
+import time
 
-t = TouchPad(Pin(11))  # A
-# t = TouchPad(Pin(12))  # B
-# t = TouchPad(Pin(13))  # Logo
+ta = TouchPad(Pin(11))  # A
+tb = TouchPad(Pin(12))  # B
+tl = TouchPad(Pin(13))  # Logo
 
-t.read()</code></pre>
+while True:
+    print(ta.read()//1000,tb.read()//1000,tl.read()//1000)
+    time.sleep_ms(200)</code></pre>
           </div>
         </section>
 
@@ -540,9 +546,13 @@ oled.show()</code></pre>
           <div class="code-block">
             <button class="copy-btn" type="button">Copy</button>
             <pre><code>from machine import Pin
+import time
 
 play = Pin(0, Pin.IN, Pin.PULL_UP)
-print(play.value())</code></pre>
+
+while True:
+    print(play.value())
+    time.sleep_ms(200)</code></pre>
           </div>
         </section>
 
@@ -573,10 +583,14 @@ buz.deinit()</code></pre>
           <div class="code-block">
             <button class="copy-btn" type="button">Copy</button>
             <pre><code>from machine import ADC, Pin
+import time
 
 phototransistor = ADC(Pin(7))
 phototransistor.atten(3)   # Full range: 0-3.6V
-print("Phototransistor Value:", phototransistor.read())</code></pre>
+while True:
+    print("Phototransistor Value:", phototransistor.read())
+    time.sleep_ms(200)
+</code></pre>
           </div>
         </section>
 
