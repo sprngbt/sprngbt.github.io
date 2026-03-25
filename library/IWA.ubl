@@ -1,0 +1,50 @@
+module 'IWA' Input
+author domino4
+version 1 2
+tags temperature humidity
+description 'Support for IWA Temperature and Humidity sensor.'
+
+  spec 'r' 'IWA_temperature' 'IWA Temperature (°C)'
+  spec 'r' 'IWA_humidity' 'IWA Humidity (%RH)'
+  space
+  spec 'r' '_IWA_read_data' '_IWA_read_data'
+  spec 'r' '_IWA_exist' '_IWA_exist'
+
+to '_IWA_exist' {
+
+  	if ('[sensors:i2cExists]' 56) {
+  		return true
+	} else {
+    	sayIt 'IWA not connected!'
+    	return false
+  	}
+}
+
+to '_IWA_read_data' {
+	local 'data' ('[data:newByteArray]' 6)
+  	'[sensors:i2cWrite]' 56 ('[data:makeList]' (hexToInt 'AC') (hexToInt '33') 0)
+  	comment 'Wait for sensor reading to complete (see datasheet).'
+  	waitMillis 80
+  	'[sensors:i2cRead]' 56 data
+  	return data
+}
+
+to IWA_humidity {
+if ('_IWA_exist') {
+  local 'data' ('_IWA_read_data')
+  local 'raw' (((at 2 data) << 12) | (((at 3 data) << 4) | ((at 4 data) >> 4)))
+  return ((100 * raw) >> 20)}
+  else return 0
+}
+
+to IWA_temperature {
+if ('_IWA_exist') {
+  local 'data' ('_IWA_read_data')
+  local 'raw' ((((at 4 data) & 15) << 16) | (((at 5 data) << 8) | (at 6 data)))
+  return (((200 * raw) >> 20) - 50)}
+  else return 0
+}
+
+
+
+

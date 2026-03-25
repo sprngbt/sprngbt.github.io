@@ -1,0 +1,36 @@
+module 'ITA' Input
+author domino4
+version 1 2 
+tags sensor distance time-of-flight
+description 'Support for VL53L0X distance sensor.
+TOF laser based.
+Range 3-200mm.
+
+Tested on:
+https://shop.m5stack.com/products/tof-sensor-unit (take Kapton tape on sensor!)
+'
+
+  spec 'r' 'ITA connected' 'ITA connected'
+  spec 'r' 'ITA distance (mm)' 'ITA distance (mm)'
+
+to 'ITA connected' {
+  return ((i2cGet 41 (hexToInt 'C0')) == (hexToInt 'EE'))
+}
+
+to 'ITA distance (mm)' {
+  i2cSet 41 0 1
+  waitMillis 70
+  if (((i2cGet 41 (hexToInt '14')) & 1) == 1) {
+    '[sensors:i2cWrite]' 41 ('[data:makeList]' (hexToInt '14'))
+    local 'buf' (newList 12)
+    '[sensors:i2cRead]' 41 buf
+    if ((at 1 buf) == 95) {
+      return (((at 11 buf) << 8) | (at 12 buf))
+    } else {
+      return -1
+    }
+  } else {
+    return -2
+  }
+}
+

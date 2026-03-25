@@ -1,0 +1,107 @@
+module 'ILC' Input
+author MicroBlocks
+version 1 1 
+choices ILC_I2Cports '2' '3' '4' '6' '7' '8' 
+description 'KidsBits STEM I2C color sensor (ILC).
+
+Hue return -1 and color return gray when sensing black, white, or gray.
+
+Technical info:
+https://www.vishay.com/en/product/84276/
+'
+
+  spec ' ' 'ILC_setExposure' '#SVG#square11#00c612 ILC set exposure _' 'menu.range:1-6' 4
+  spec ' ' 'ILC_setLED' '#SVG#square11#00c612 ILC set LED _ port _' 'bool menu.ILC_I2Cports' true 2
+  space
+  spec 'r' 'ILC_color' 'ILC color'
+  spec 'r' 'ILC_hue' 'ILC hue'
+  spec 'r' 'ILC_seesColor' 'ILC sees color _ : threshold _' 'color num' nil 30
+  space
+  spec 'r' '_ILC_adjustedRGBW' '_ILC_adjustedRGBW'
+  spec ' ' '_ILC_init' '_ILC_init'
+  spec 'r' '_ILC_rawRGBW' '_ILC_rawRGBW'
+
+to '_ILC_adjustedRGBW' {
+  local 'rgbw' ('_ILC_rawRGBW')
+  local 'r' ((72 * (at 1 rgbw)) / 100)
+  local 'g' ((66 * (at 2 rgbw)) / 100)
+  local 'b' ((100 * (at 3 rgbw)) / 100)
+  local 'max' (maximum (maximum (maximum r g) b) 1)
+  atPut 1 rgbw ((255 * r) / max)
+  atPut 2 rgbw ((255 * g) / max)
+  atPut 3 rgbw ((255 * b) / max)
+  return rgbw
+}
+
+to '_ILC_init' {
+  if ('[sensors:i2cExists]' (hexToInt '10')) {
+    local 'data' ('[data:newByteArray]' 2)
+    '[sensors:i2cRead]' (hexToInt '10') data
+    if ((at 1 data) == 0) {
+      comment 'Not yet initialized; use default exposure level.'
+      ILC_setExposure 4
+    }
+  } else {
+    sayIt 'No color sensor (ILC) detected!'
+    stopTask
+  }
+}
+
+to '_ILC_rawRGBW' {
+  '_ILC_init'
+  local 'result' (newList 4)
+  local 'color16bits' ('[data:newByteArray]' 2)
+  for i 4 {
+    '[sensors:i2cWrite]' (hexToInt '10') ('[data:makeList]' (7 + i)) false
+    '[sensors:i2cRead]' (hexToInt '10') color16bits
+    comment 'Raw values R, G, B & white'
+    atPut i result ((at 1 color16bits) | ((at 2 color16bits) << 8))
+  }
+  return result
+}
+
+to ILC_color {
+  local 'rgbw' ('_ILC_adjustedRGBW')
+  local 'r' (at 1 rgbw)
+  local 'g' (at 2 rgbw)
+  local 'b' (at 3 rgbw)
+  local 'min' (minimum (minimum r g) b)
+  local 'max' (maximum (maximum r g) b)
+  if ((max - min) < 50) {
+    comment 'Black, white, or gray: return gray'
+    return ('[misc:hsvColor]' 0 0 30)
+  } else {
+    r = (r - min)
+    g = (g - min)
+    b = (b - min)
+    return ('[misc:hsvColor]' ('[misc:hue]' (((r << 16) | (g << 8)) | b)) 100 100)
+  }
+}
+
+to ILC_hue {
+  return ('[misc:hue]' (ILC_color))
+}
+
+to ILC_seesColor c optionalThreshold {
+  local 'threshold' (argOrDefault 2 10)
+  local 'diff' (absoluteValue ((ILC_hue) - ('[misc:hue]' c)))
+  return (diff <= threshold)
+}
+
+to ILC_setExposure exposure {
+  comment 'Enable sensor and set exposure (1-6, where 1 is 40ms and 6 is 1280ms)'
+  exposure = (maximum 0 (minimum (exposure - 1) 5))
+  i2cSet (hexToInt '10') 0 1
+  comment 'Shutdown color sensor'
+  i2cSet (hexToInt '10') 0 0
+  i2cSet (hexToInt '10') 0 ((exposure << 4) | 1)
+  comment 'Enable color sensor'
+  i2cSet (hexToInt '10') 0 0
+  i2cSet (hexToInt '10') 0 (exposure << 4)
+}
+
+to ILC_setLED on port {
+  comment 'Set LED on/off. In port 5 (UART port) LED is always is on.'
+  digitalWriteOp (at ('[data:find]' ('[data:convertType]' port 'number') ('[data:makeList]' 2 3 4 6 7 8)) ('[data:makeList]' 2 26 27 23 16 5)) on
+}
+
