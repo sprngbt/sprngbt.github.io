@@ -1,23 +1,5 @@
 [
   {
-    "file": "Cutebot.ubl",
-    "download": "Cutebot.ubl",
-    "module_name": "Cutebot",
-    "module_type": "Output",
-    "author": "wwj718",
-    "version": "1.8",
-    "description": "Cutebot is a rear-drive smart car driven by dual high speed motors.\n\nIt features two RGB headlights, left and right line-following sensors, an ultrasonic distance sensor, and two downward-facing NeoPixels.\n\nAdd the IR Remote library to use the IR receiver (pin 16).\n\nThe Cutebot can work with the AILens library.\n\nhttps://www.elecfreaks.com/learn-en/microbitKit/smart_cutebot/cutebot_car.html"
-  },
-  {
-    "file": "Cutebot Pro.ubl",
-    "download": "Cutebot Pro.ubl",
-    "module_name": "Cutebot Pro",
-    "module_type": "Output",
-    "author": "MicroBlocks",
-    "version": "0.11",
-    "description": "The ELECFREAKS Cutebot Pro features:\n- 2 x Encoder Motors\n- HC-SR04 Distance Sensor (pins 8 and 12 aka 44/0)\n- IR Remote Receiver (pin 16)\n- Buzzer (pin 0)\n- 2 x RGB LEDs\n- 2 x NeoPixels (pin 15)\n- 4 x Line tracking Sensors with calibration\n- 2 x I2C expansion ports\n- 4 x GPIO expansion ports\n- 4 x Servo expansion ports\n- 1 x DC Motor expansion port\n- micro:bit edge connector\n- 18650 Li-Ion battery holder with charger\n- Power on/off switch and battery charge indicator\n- Program accessible PID engine\n\nI2C Commands:\n(see https://github.com/elecfreaks/pxt-Cutebot-Pro)\n\n0 - turn PID on/off (commented out; PID should always be enabled)\n1 - set wheel power (simple PWM; does not use PID to adjust speed)\n2 - PID speed control\n3 - PID move distance\n4 - PID turn by angle (with turn style)\n\n5 - read motor speed\n\n7 - full speed ahead\n8 - full speed reverse\n9 - stop immediately\n\n0xA - clear wheel counts\n\n0xB - set external motor power\n0xC - stop external motor\n\n0xD - set servo angle/speed\n\n0xF - set headlight RGB\n0x10 - turn off headlights\n\n0x11 - get tracking sensor gray level for a given sensor\n0x12 - get tracking state\n0x14 - get track state fused offset (-3000 to 3000)\n0x15 - read version\n0x16 - read wheel counts\n0x17 (23) - PID turn by a specific angle (use one or both wheels)"
-  },
-  {
     "file": "IGA.ubl",
     "download": "IGA.ubl",
     "module_name": "IGA",
@@ -54,15 +36,6 @@
     "description": "Support for IWA Temperature and Humidity sensor."
   },
   {
-    "file": "Maqueen.ubl",
-    "download": "Maqueen.ubl",
-    "module_name": "Maqueen",
-    "module_type": "Output",
-    "author": "Turgut Guneysu",
-    "version": "1.2",
-    "description": "DFRobot Maqueen Car Kit Library\nSupports:\n  micro:bit v1 and v2\n  2 x N20 Motors (133rpm)\n  2 x LEDs\n  2 x Servos (use Servo Lib)\n  2 x Line Sensors\n  2 x Extension Ports\n  4 x RGB LEDs (use NEOPixel Lib)\n  HC-SR04 Distance Sensor\n  Buzzer\n  IR receiver (NEC)\n  I2C Connector\n  3.5-5V Battery Connector\nPin assignments:\n  Buzzer \t\t= 0 \t= io1\n  Trigger \t\t= 1 \t= io9\n  Echo \t\t\t= 2 \t= io18\n  Servo1 \t\t= 1 \t= io9\n  Servo2 \t\t= 2 \t= io18\n  LED_Left \t\t= 8\t\t= io44\n  LED_Right \t= 12\t= io0\n  Line_Left \t= 13\t= io36\n  Line_Right \t= 14\t= io37\n  NeoPixels \t= 15\t= io35\n  IR Receiver \t= 16\t= io43\nNote: HC-SR04 and SERVOs share pins 1 and 2."
-  },
-  {
     "file": "ODA.ubl",
     "download": "ODA.ubl",
     "module_name": "ODA",
@@ -70,14 +43,5 @@
     "author": "domino4",
     "version": "1.22",
     "description": "Supports 0.96in and 1.54in Displays with SSD1306 and 2.42in ODA with SSD1309 chipsets, also 1.3in with SHT1106 chipset. Comm mode is I2C or SPI.\nChanges:\n- always display buffer\n- defer display updates block\n- remove reveal\n- switch to x (0-127), y (0-63)\n- Pruned commands and vars\n- textX and textY\n- Text at any x and y\n- handles newLines\n- removed dependencies\n- unified data format for chars, sprites, and images\n- image draw at any x,y\n- filled rectangle\n- image draw bug fix\n- stack overflow fix\n- improve conversion ops, i2c io, rect fill, img processing, and buffer displays\n- reduce i2c buffer to 64 bytes\n- correct internal draws, clean-up vars, restore _clearDisplay\nMiroslav Klimos\n- added Zoom option for text\n- added support for 1.3in ODA (1106) - thanks to KwyjiboYue"
-  },
-  {
-    "file": "Servo.ubl",
-    "download": "Servo.ubl",
-    "module_name": "Servo",
-    "module_type": "Output",
-    "author": "MicroBlocks",
-    "version": "1.4",
-    "description": "Control both positional (angle) and rotational servo motors."
   }
 ]
