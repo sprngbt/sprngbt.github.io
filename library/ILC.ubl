@@ -2,7 +2,7 @@ module 'ILC' Input
 author MicroBlocks
 version 1 1 
 choices ILC_I2Cports '2' '3' '4' '6' '7' '8' 
-description 'KidsBits STEM I2C color sensor (ILC).
+description 'STEM I2C color sensor (VEML6040).
 
 Hue return -1 and color return gray when sensing black, white, or gray.
 

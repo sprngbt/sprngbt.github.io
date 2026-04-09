@@ -2,7 +2,9 @@ module 'IWA' Input
 author MicroBlocks
 version 1 2
 tags temperature humidity
-description 'Support for IWA Temperature and Humidity sensor.'
+description 'Support for AHT20 temperature and relative humidity sensor.
+
+https://files.seeedstudio.com/wiki/Grove-AHT20_I2C_Industrial_Grade_Temperature_and_Humidity_Sensor/AHT20-datasheet-2020-4-16.pdf'
 
   spec 'r' 'IWA_temperature' 'IWA Temperature (°C)'
   spec 'r' 'IWA_humidity' 'IWA Humidity (%RH)'

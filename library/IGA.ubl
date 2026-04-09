@@ -2,10 +2,10 @@ module 'IGA' Input
 author 'José García Yeste'
 version 1 2
 tags sensor co2 tvoc
-description 'Support for Sensirion IGA Air Quality Sensor.
+description 'Support for Sensirion SGP30 Air Quality Sensor.
 Returns the CO2 in ppm and TVOC in ppb.
 
-Based on: https://github.com/adafruit/Adafruit_IGA/blob/master/Adafruit_IGA.cpp'
+Based on: https://github.com/adafruit/Adafruit_SGP30/blob/master/Adafruit_SGP30.cpp'
 
 variables '_IGA inizialized' 
 
