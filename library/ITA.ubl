@@ -1,5 +1,5 @@
 module 'ITA' Input
-author domino4
+author 'José García Yeste'
 version 1 2 
 tags sensor distance time-of-flight
 description 'Support for VL53L0X distance sensor.

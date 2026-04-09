@@ -4,7 +4,7 @@
     "download": "IGA.ubl",
     "module_name": "IGA",
     "module_type": "Input",
-    "author": "domino4",
+    "author": "José García Yeste",
     "version": "1.2",
     "description": "Support for Sensirion IGA Air Quality Sensor.\nReturns the CO2 in ppm and TVOC in ppb.\n\nBased on: https://github.com/adafruit/Adafruit_IGA/blob/master/Adafruit_IGA.cpp"
   },
@@ -22,7 +22,7 @@
     "download": "ITA.ubl",
     "module_name": "ITA",
     "module_type": "Input",
-    "author": "domino4",
+    "author": "José García Yeste",
     "version": "1.2",
     "description": "Support for VL53L0X distance sensor.\nTOF laser based.\nRange 3-200mm.\n\nTested on:\nhttps://shop.m5stack.com/products/tof-sensor-unit (take Kapton tape on sensor!)"
   },
@@ -31,17 +31,8 @@
     "download": "IWA.ubl",
     "module_name": "IWA",
     "module_type": "Input",
-    "author": "domino4",
+    "author": "MicroBlocks",
     "version": "1.2",
     "description": "Support for IWA Temperature and Humidity sensor."
-  },
-  {
-    "file": "ODA.ubl",
-    "download": "ODA.ubl",
-    "module_name": "ODA",
-    "module_type": "Output",
-    "author": "domino4",
-    "version": "1.22",
-    "description": "Supports 0.96in and 1.54in Displays with SSD1306 and 2.42in ODA with SSD1309 chipsets, also 1.3in with SHT1106 chipset. Comm mode is I2C or SPI.\nChanges:\n- always display buffer\n- defer display updates block\n- remove reveal\n- switch to x (0-127), y (0-63)\n- Pruned commands and vars\n- textX and textY\n- Text at any x and y\n- handles newLines\n- removed dependencies\n- unified data format for chars, sprites, and images\n- image draw at any x,y\n- filled rectangle\n- image draw bug fix\n- stack overflow fix\n- improve conversion ops, i2c io, rect fill, img processing, and buffer displays\n- reduce i2c buffer to 64 bytes\n- correct internal draws, clean-up vars, restore _clearDisplay\nMiroslav Klimos\n- added Zoom option for text\n- added support for 1.3in ODA (1106) - thanks to KwyjiboYue"
   }
 ]

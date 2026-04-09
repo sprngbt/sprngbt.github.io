@@ -1,5 +1,5 @@
 module 'IWA' Input
-author domino4
+author MicroBlocks
 version 1 2
 tags temperature humidity
 description 'Support for IWA Temperature and Humidity sensor.'

@@ -1,5 +1,5 @@
 module 'IGA' Input
-author domino4
+author 'José García Yeste'
 version 1 2
 tags sensor co2 tvoc
 description 'Support for Sensirion IGA Air Quality Sensor.

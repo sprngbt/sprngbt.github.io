@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Uploaded to: SVG Repo, www.svgrepo.com, Generator: SVG Repo Mixer Tools -->
+
+<svg
+   version="1.0"
+   id="Layer_1"
+   width="100.00274mm"
+   height="100mm"
+   viewBox="0 0 30.237048 30.236221"
+   enable-background="new 0 0 64 64"
+   xml:space="preserve"
+   sodipodi:docname="ITA.svg"
+   inkscape:version="1.2.2 (b0a84865, 2022-12-01)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"><defs
+   id="defs191" /><sodipodi:namedview
+   id="namedview189"
+   pagecolor="#ffffff"
+   bordercolor="#000000"
+   borderopacity="0.25"
+   inkscape:showpageshadow="2"
+   inkscape:pageopacity="0.0"
+   inkscape:pagecheckerboard="0"
+   inkscape:deskcolor="#d1d1d1"
+   showgrid="false"
+   inkscape:zoom="0.99"
+   inkscape:cx="250.50505"
+   inkscape:cy="400"
+   inkscape:window-width="1390"
+   inkscape:window-height="942"
+   inkscape:window-x="0"
+   inkscape:window-y="25"
+   inkscape:window-maximized="0"
+   inkscape:current-layer="Layer_1"
+   inkscape:document-units="mm" />
+<g
+   id="g186"
+   transform="matrix(0.47254801,0,0,0.47254801,-0.00626126,-0.00661567)">
+	<circle
+   fill="#231f20"
+   cx="50"
+   cy="21.014"
+   r="2"
+   id="circle182" />
+	<path
+   fill="#231f20"
+   d="M 62.838,17.992 46.021,1.175 c -1.55,-1.548 -4.057,-1.548 -5.606,0 l -2.102,2.104 4.204,4.203 c 0.388,0.387 0.388,1.015 0,1.401 -0.388,0.389 -1.015,0.389 -1.401,0 l -4.204,-4.204 -2.804,2.803 7.008,7.007 c 0.387,0.388 0.387,1.015 0,1.402 -0.388,0.387 -1.015,0.387 -1.401,0 l -7.007,-7.006 -2.803,2.802 4.203,4.204 c 0.388,0.387 0.388,1.014 0,1.4 -0.387,0.388 -1.014,0.388 -1.4,0 l -4.204,-4.203 -2.804,2.803 4.205,4.203 c 0.387,0.388 0.387,1.014 0,1.402 -0.388,0.389 -1.015,0.389 -1.401,-10e-4 l -4.205,-4.204 -2.803,2.805 7.008,7.006 c 0.387,0.388 0.387,1.014 0,1.402 -0.389,0.387 -1.015,0.387 -1.402,0 l -7.006,-7.008 -2.804,2.803 4.204,4.204 c 0.388,0.388 0.388,1.015 0,1.402 -0.389,0.387 -1.015,0.387 -1.401,0 l -4.204,-4.205 -2.803,2.804 4.204,4.204 c 0.387,0.386 0.387,1.013 0,1.4 -0.388,0.388 -1.015,0.388 -1.401,0 l -4.204,-4.203 -2.803,2.803 7.007,7.007 c 0.387,0.387 0.387,1.014 0,1.401 -0.388,0.387 -1.015,0.387 -1.402,0 l -7.006,-7.008 -2.804,2.804 4.204,4.204 c 0.389,0.387 0.389,1.015 0.001,1.401 -0.389,0.387 -1.016,0.387 -1.401,0 L 3.279,38.313 1.175,40.415 c -1.549,1.549 -1.549,4.056 0,5.606 l 16.817,16.816 c 1.549,1.55 4.057,1.55 5.606,0 l 39.24,-39.239 c 1.55,-1.549 1.55,-4.057 0,-5.606 z M 50,25.014 c -2.209,0 -4,-1.791 -4,-4 0,-2.209 1.791,-4 4,-4 2.209,0 4,1.791 4,4 0,2.209 -1.791,4 -4,4 z"
+   id="path184" />
+</g>
+</svg>

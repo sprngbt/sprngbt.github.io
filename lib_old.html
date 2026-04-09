@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MicroBlocks xChip Library</title>
+  <title>UBL Library</title>
   <style>
     :root {
       --bg: #1f1f1f;
@@ -89,32 +89,6 @@
       text-decoration: underline;
     }
 
-    .icon-col {
-      width: 1%;
-      white-space: nowrap;
-      text-align: center;
-      vertical-align: middle;
-    }
-
-    .svg-icon {
-      width: 1.2em;
-      height: 1.2em;
-      display: inline-block;
-      vertical-align: middle;
-      background-color: currentColor;
-      -webkit-mask-repeat: no-repeat;
-      -webkit-mask-position: center;
-      -webkit-mask-size: contain;
-      mask-repeat: no-repeat;
-      mask-position: center;
-      mask-size: contain;
-      opacity: 0.95;
-    }
-
-    .svg-icon.missing {
-      opacity: 0;
-    }
-
     .desc {
       white-space: pre-wrap;
       line-height: 1.4;
@@ -134,7 +108,6 @@
       <table id="ublTable" hidden>
         <thead>
           <tr>
-            <th class="icon-col">Icon</th>
             <th>Download</th>
             <th>Module name</th>
             <th>Version</th>
@@ -170,28 +143,6 @@
         for (const item of data) {
           const tr = document.createElement('tr');
 
-          const tdIcon = document.createElement('td');
-          tdIcon.className = 'icon-col';
-
-          const icon = document.createElement('span');
-          icon.className = 'svg-icon';
-
-          const baseName = (item.download || item.file || '').replace(/\.ubl$/i, '');
-          const iconPath = './library/' + baseName + '.svg';
-          icon.style.webkitMaskImage = 'url("' + iconPath + '")';
-          icon.style.maskImage = 'url("' + iconPath + '")';
-
-          const testImg = new Image();
-          testImg.onload = () => {
-            icon.style.visibility = 'visible';
-          };
-          testImg.onerror = () => {
-            icon.classList.add('missing');
-          };
-          testImg.src = iconPath;
-
-          tdIcon.appendChild(icon);
-
           const tdDownload = document.createElement('td');
           const link = document.createElement('a');
           link.className = 'download-link';
@@ -213,7 +164,6 @@
           tdDescription.className = 'desc';
           tdDescription.textContent = item.description || '';
 
-          tr.appendChild(tdIcon);
           tr.appendChild(tdDownload);
           tr.appendChild(tdName);
           tr.appendChild(tdVersion);
