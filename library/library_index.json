@@ -6,7 +6,7 @@
     "module_type": "Input",
     "author": "José García Yeste",
     "version": "1.2",
-    "description": "Support for Sensirion IGA Air Quality Sensor.\nReturns the CO2 in ppm and TVOC in ppb.\n\nBased on: https://github.com/adafruit/Adafruit_IGA/blob/master/Adafruit_IGA.cpp"
+    "description": "Support for Sensirion SGP30 Air Quality Sensor.\nReturns the CO2 in ppm and TVOC in ppb.\n\nBased on: https://github.com/adafruit/Adafruit_SGP30/blob/master/Adafruit_SGP30.cpp"
   },
   {
     "file": "ILC.ubl",
@@ -15,7 +15,7 @@
     "module_type": "Input",
     "author": "MicroBlocks",
     "version": "1.1",
-    "description": "KidsBits STEM I2C color sensor (ILC).\n\nHue return -1 and color return gray when sensing black, white, or gray.\n\nTechnical info:\nhttps://www.vishay.com/en/product/84276/"
+    "description": "STEM I2C color sensor (VEML6040).\n\nHue return -1 and color return gray when sensing black, white, or gray.\n\nTechnical info:\nhttps://www.vishay.com/en/product/84276/"
   },
   {
     "file": "ITA.ubl",
@@ -33,6 +33,6 @@
     "module_type": "Input",
     "author": "MicroBlocks",
     "version": "1.2",
-    "description": "Support for IWA Temperature and Humidity sensor."
+    "description": "Support for AHT20 temperature and relative humidity sensor.\n\nhttps://files.seeedstudio.com/wiki/Grove-AHT20_I2C_Industrial_Grade_Temperature_and_Humidity_Sensor/AHT20-datasheet-2020-4-16.pdf"
   }
 ]
