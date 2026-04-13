@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   viewBox="0 0 100 100"
+   version="1.1"
+   id="svg1"
+   sodipodi:docname="battery-chip_logo.svg"
+   width="100mm"
+   height="100mm"
+   inkscape:version="1.4.2 (ebf0e940, 2025-05-08)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs1" />
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="1.310719"
+     inkscape:cx="295.25779"
+     inkscape:cy="259.01814"
+     inkscape:window-width="2560"
+     inkscape:window-height="932"
+     inkscape:window-x="0"
+     inkscape:window-y="30"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg1"
+     inkscape:document-units="mm" />
+  <!--! Font Awesome Free 6.0.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. -->
+  <path
+     d="M 50,61.111115 H 16.666667 V 38.888895 H 50 Z m -49.9999988814697,-25 C 1.1185303e-6,28.437505 6.2187509,22.222225 13.88889,22.222225 h 66.666664 c 7.673611,0 13.888889,6.21528 13.888889,13.88889 v 2.77778 c 3.072916,0 5.555555,2.48264 5.555555,5.55555 v 11.11111 c 0,3.07292 -2.482639,5.55556 -5.555555,5.55556 v 2.77778 c 0,7.67361 -6.215278,13.88888 -13.888889,13.88888 H 13.88889 C 6.2187509,77.777775 1.1185303e-6,71.562505 1.1185303e-6,63.888895 Z M 13.88889,33.333335 c -1.534723,0 -2.777778,1.25 -2.777778,2.77778 v 27.77778 c 0,1.52777 1.243055,2.77777 2.777778,2.77777 h 66.666664 c 1.527778,0 2.777778,-1.25 2.777778,-2.77777 v -27.77778 c 0,-1.52778 -1.25,-2.77778 -2.777778,-2.77778 z"
+     id="path1"
+     style="stroke-width:0.173611" />
+</svg>
