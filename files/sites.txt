@@ -1,0 +1,25 @@
+! Springbot / MicroBlocks / development allowlist
+! Allows each root domain and all subdomains
+
+@@||microblocks.fun^
+@@||sprngbt.com^
+@@||springbot.co.za^
+@@||github.com^
+@@||github.io^
+@@||githubusercontent.com^
+@@||githubassets.com^
+@@||domino4.com^
+@@||maxiq.space^
+@@||themaxiq.com^
+@@||apple.com^
+@@||google.com^
+@@||mit.edu^
+@@||berkeley.edu^
+@@||bitbucket.org^
+@@||visualstudio.com^
+@@||thonny.org^
+@@||viper-ide.org^
+@@||arduino.cc^
+@@||downloads.arduino.cc^
+@@||arduino15-packages.s3.amazonaws.com^
+@@||24mm2.com^
