@@ -51,6 +51,29 @@
       text-decoration: underline;
     }
 
+
+    .back-button {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      margin-bottom: 1rem;
+      padding: 0.7rem 0.95rem;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.75);
+      color: var(--text);
+      font-weight: 700;
+      font-size: 0.95rem;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    .back-button:hover {
+      text-decoration: none;
+      border-color: rgba(56, 189, 248, 0.45);
+      background: rgba(30, 41, 59, 0.95);
+    }
+
     .container {
       width: min(100% - 2rem, var(--maxw));
       margin: 0 auto;
@@ -376,6 +399,10 @@
   <header class="hero">
     <div class="container">
       <div class="hero-card">
+        <button class="back-button" type="button" onclick="goBack()" aria-label="Go back to the previous page">
+          ← Back
+        </button>
+
         <div class="eyebrow">Reference Guide</div>
         <h1>Springbot MicroBlocks</h1>
         <p class="lead">
@@ -558,5 +585,15 @@
       Springbot MicroBlocks reference page
     </footer>
   </div>
+
+  <script>
+    function goBack() {
+      if (window.history.length > 1) {
+        window.history.back();
+      } else {
+        window.location.href = "index.html";
+      }
+    }
+  </script>
 </body>
 </html>

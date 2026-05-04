@@ -317,6 +317,42 @@
       font-size: 0.95rem;
     }
 
+    .qr-hover {
+      position: relative;
+      display: inline-block;
+      cursor: default;
+    }
+
+    .qr-popup {
+      position: absolute;
+      top: 50%;
+      left: calc(100% + 12px);
+      transform: translateY(-50%);
+      width: 180px;
+      padding: 0.65rem;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: rgba(2, 6, 23, 0.98);
+      box-shadow: var(--shadow);
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition: opacity 0.18s ease, visibility 0.18s ease;
+      z-index: 1000;
+    }
+
+    .qr-popup img {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+
+    .qr-hover:hover .qr-popup,
+    .qr-hover:focus-within .qr-popup {
+      opacity: 1;
+      visibility: visible;
+    }
+
     @media (max-width: 900px) {
       .layout {
         grid-template-columns: 1fr;
@@ -324,6 +360,14 @@
 
       aside.toc {
         position: static;
+      }
+    }
+
+    @media (max-width: 700px) {
+      .qr-popup {
+        left: 0;
+        top: calc(100% + 10px);
+        transform: none;
       }
     }
   </style>
@@ -415,7 +459,14 @@
                   </td>
                 </tr>
                 <tr>
-                  <td>iPad</td>
+                  <td>
+                    <span class="qr-hover">
+                      iPad
+                      <span class="qr-popup">
+                        <img src="sprngbt.com.ios.svg" alt="QR code for iPad App Store link" />
+                      </span>
+                    </span>
+                  </td>
                   <td>
                     <a href="https://apps.apple.com/app/id6758344724" target="_blank" rel="noopener noreferrer">
                       App Store
@@ -426,7 +477,14 @@
                   </td>
                 </tr>
                 <tr>
-                  <td>Android (3rd party)</td>
+                  <td>
+                    <span class="qr-hover">
+                      Android (3rd party)
+                      <span class="qr-popup">
+                        <img src="sprngbt.com.and.svg" alt="QR code for Android Google Play link" />
+                      </span>
+                    </span>
+                  </td>
                   <td>
                     <a href="https://play.google.com/store/apps/details?id=com.cocuberobot.mb" target="_blank" rel="noopener noreferrer">
                       Google Play
