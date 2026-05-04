@@ -1,6 +1,6 @@
 ! Springbot / MicroBlocks / development allowlist
 ! Allows each root domain and all subdomains
-
+||*^
 @@||microblocks.fun^
 @@||sprngbt.com^
 @@||springbot.co.za^
