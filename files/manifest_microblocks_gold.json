@@ -21,6 +21,14 @@
                 {
                     "path": "s3/mb_gold.bin",
                     "offset": 65536
+                },
+                {
+                    "path": "s3/mbcode.bin",
+                    "offset": 1998848
+                },
+                {
+                    "path": "s3/mspiffs.bin",
+                    "offset": 2162688
                 }
             ]
         }
