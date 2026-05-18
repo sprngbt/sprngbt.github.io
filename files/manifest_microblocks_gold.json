@@ -27,7 +27,7 @@
                     "offset": 1998848
                 },
                 {
-                    "path": "s3/mspiffs.bin",
+                    "path": "s3/spiffs.bin",
                     "offset": 2162688
                 }
             ]
