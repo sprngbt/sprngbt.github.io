@@ -1,6 +1,6 @@
 {
-    "name": "domino4 MicroBlocks Green",
-    "version": "397",
+    "name": "domino4 MicroBlocks",
+    "version": "398",
     "new_install_prompt_erase": true,
     "builds": [
         {
@@ -19,8 +19,16 @@
                     "offset": 57344
                 },
                 {
-                    "path": "s3/mb_green.bin",
+                    "path": "s3/mb_gold.bin",
                     "offset": 65536
+                },
+                {
+                    "path": "s3/mbcode.bin",
+                    "offset": 1998848
+                },
+                {
+                    "path": "s3/spiffs.bin",
+                    "offset": 2162688
                 }
             ]
         }
