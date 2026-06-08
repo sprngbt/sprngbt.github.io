@@ -1,4 +1,4 @@
-module 'Real Time Clock'
+module 'ICR'
 author MicroBlocks
 version 1 9 
 choices rtc_timeOrDate 'time (H:M:S)' 'date (Y-M-D)' 

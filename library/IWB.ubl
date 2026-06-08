@@ -1,5 +1,5 @@
 
-module 'Air Pressure (SPL06)' Input
+module 'IWB' Input
 author 'José García Yeste'
 version 1 0 
 description 'SPL06-001 Air pressure sensor
