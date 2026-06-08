@@ -1,0 +1,135 @@
+
+module 'Air Pressure (SPL06)' Input
+author 'José García Yeste'
+version 1 0 
+description 'SPL06-001 Air pressure sensor
+Tested on Springbot Demo Kit
+Base on https://github.com/ArtronShop/ArtronShop_SPL06-001/
+'
+variables _spl06_addr _spl06_coefs _spl06_scaleFactor _spl06_baseAltitude _spl06_basePressure 
+
+  spec 'r' 'spl06 connected' 'spl06 connected'
+  spec 'r' 'spl06 air pressure' 'spl06 air pressure (mBar)'
+  spec 'r' 'spl06 temperature (°C)' 'spl06 temperature (°C)'
+  space
+  spec 'r' 'spl06 altitude' 'spl06 altitude (cm)'
+  spec ' ' 'spl06 set current altitude' 'spl06 set current altitude _ meters' 'num' 0
+  space
+  spec ' ' '_spl06 init' '_spl06 init'
+  spec ' ' '_spl06 read coefficients' '_spl06 read coefficients'
+  spec 'r' '_spl06_altitudeMillimeters' '_spl06_altitudeMillimeters'
+  spec 'r' '_spl06_rawPressure' '_spl06_rawPressure'
+  spec 'r' '_spl06 get24bits' '_spl06 get24bits _' 'num' 0
+
+to '_spl06 get24bits' reg {
+  local 'buf' (newList 3)
+  '[sensors:i2cWrite]' _spl06_addr reg
+  '[sensors:i2cRead]' _spl06_addr buf
+  local 'res' ((((at 1 buf) << 16) | ((at 2 buf) << 8)) | (at 3 buf))
+  if (res > (1 << 23)) {
+    res = (res - (1 << 24))
+  }
+  return res
+}
+
+to '_spl06 init' {
+  if (_spl06_addr != 0) {return}
+  _spl06_addr = 119
+  comment 'RESET'
+  i2cSet _spl06_addr (hexToInt 'C') 9
+  waitMillis 50
+  comment ' MODE_BACKGND_BOTH'
+  i2cSet _spl06_addr 8 7
+  local 'spl06_scaleFactors' ('[data:makeList]' 524288 1572864 3670016 7864320 253952 516096 1040384 2088960)
+  comment 'Oversampling 0-7 (5 = 32x)'
+  local 'spl06_oversampling' 5
+  _spl06_scaleFactor = (at (spl06_oversampling + 1) spl06_scaleFactors)
+  i2cSet _spl06_addr 6 ((hexToInt '60') | (spl06_oversampling & 7))
+  i2cSet _spl06_addr 7 ((hexToInt 'B0') | (spl06_oversampling & 7))
+  i2cSet _spl06_addr 9 (ifExpression (spl06_oversampling >= 4) (hexToInt 'C') 8)
+  waitMillis 100
+  '_spl06 read coefficients'
+}
+
+to '_spl06 read coefficients' {
+  local 'buf' (newList 18)
+  _spl06_coefs = (newList 9)
+  '[sensors:i2cWrite]' _spl06_addr (hexToInt '10')
+  '[sensors:i2cRead]' _spl06_addr buf
+  comment 'c0'
+  atPut 1 _spl06_coefs (((at 1 buf) << 4) | ((at 2 buf) >> 4))
+  if ((at 1 _spl06_coefs) > (1 << 11)) {
+    atPut 1 _spl06_coefs ((at 1 _spl06_coefs) - (1 << 12))
+  }
+  comment 'c1'
+  atPut 2 _spl06_coefs ((((at 2 buf) & (hexToInt 'F')) << 8) | (at 3 buf))
+  if ((at 2 _spl06_coefs) > (1 << 11)) {
+    atPut 2 _spl06_coefs ((at 2 _spl06_coefs) - (1 << 12))
+  }
+  comment 'c01, c11, c20, c21, c30'
+  for c ('[data:range]' 3 7) {
+    local 'coef' (((at ((c * 2) + 3) buf) << 8) | (at ((c * 2) + 4) buf))
+    if (coef > (1 << 15)) {
+      coef = (coef - (1 << 16))
+    }
+    atPut c _spl06_coefs coef
+  }
+  comment 'c00, c10'
+  atPut 8 _spl06_coefs ((((at 4 buf) << 12) | ((at 5 buf) << 4)) | ((at 6 buf) >> 4))
+  if ((at 8 _spl06_coefs) > (1 << 19)) {
+    atPut 8 _spl06_coefs ((at 8 _spl06_coefs) - (1 << 20))
+  }
+  atPut 9 _spl06_coefs (((((at 6 buf) & (hexToInt 'F')) << 16) | ((at 7 buf) << 8)) | (at 8 buf))
+  if ((at 9 _spl06_coefs) > (1 << 19)) {
+    atPut 9 _spl06_coefs ((at 9 _spl06_coefs) - (1 << 20))
+  }
+}
+
+to '_spl06_altitudeMillimeters' {
+  if (_spl06_basePressure == 0) {
+    comment 'if base altitude not set, use zero (useful for relative measurments)'
+    'spl06 set current altitude' 0
+  }
+  return ('[misc:pressureToAltitude]' ('_spl06_rawPressure') _spl06_basePressure)
+}
+
+to '_spl06_rawPressure' {
+  '_spl06 init'
+  local 'praw' ('_spl06 get24bits' 0)
+  local 'traw' ('_spl06 get24bits' 3)
+  local 'k' (_spl06_scaleFactor >> 10)
+  local 'f1' ((longMult praw ((at 9 _spl06_coefs) + ((longMult praw ((at 5 _spl06_coefs) + ((longMult praw (at 7 _spl06_coefs) 10) / k)) 10) / k)) 10) / k)
+  local 'f3' ((longMult traw ((longMult praw ((at 4 _spl06_coefs) + ((longMult praw (at 6 _spl06_coefs) 10) / k)) 10) / k) 10) / k)
+  return (sum (at 8 _spl06_coefs) f1 ((longMult traw (at 3 _spl06_coefs) 10) / k) f3)
+}
+
+to 'spl06 air pressure' {
+  return ((('_spl06_rawPressure') + 50) / 100)
+}
+
+to 'spl06 altitude' {
+  return ((('_spl06_altitudeMillimeters') + 5) / -10)
+}
+
+to 'spl06 connected' {
+  '_spl06 init'
+  return (((i2cGet _spl06_addr (hexToInt 'D')) & (hexToInt 'F0')) == 16)
+}
+
+to 'spl06 set current altitude' baseMeters {
+  '_spl06 init'
+  local 'total' 0
+  repeat 20 {
+    total += ('_spl06_rawPressure')
+    waitMillis 1
+  }
+  _spl06_basePressure = (total / 20)
+  _spl06_baseAltitude = baseMeters
+}
+
+to 'spl06 temperature (°C)' {
+  '_spl06 init'
+  local 'traw' ('_spl06 get24bits' 3)
+  return (((at 1 _spl06_coefs) / 2) + ((traw * (at 2 _spl06_coefs)) / _spl06_scaleFactor))
+}
+
