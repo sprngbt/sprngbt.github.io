@@ -1,12 +1,12 @@
 [
   {
-    "file": "IWB.ubl",
-    "download": "IWB.ubl",
-    "module_name": "Air Pressure (SPL06)",
-    "module_type": "Input",
-    "author": "José García Yeste",
-    "version": "1.0",
-    "description": "SPL06-001 Air pressure sensor\nTested on Springbot Demo Kit\nBase on https://github.com/ArtronShop/ArtronShop_SPL06-001/"
+    "file": "ICR.ubl",
+    "download": "ICR.ubl",
+    "module_name": "ICR",
+    "module_type": "",
+    "author": "MicroBlocks",
+    "version": "1.9",
+    "description": "Real Time Clock (RTC)\n\nSimple functions to set and read the current time and date of a real-time clock module.\nWith a 3V coin cell battery intalled, the clock will maintain the time and date while powered off.\n\nCurrently supports the following RTC modules: DS1307, DS3231, PCF8523, PCF8563, PCF85063, RV1805, SD3031.\nMay be we will extend the list and support others in the future.\n\nhttps://www.analog.com/media/en/technical-documentation/data-sheets/DS1307.pdf\nhttps://www.analog.com/media/en/technical-documentation/data-sheets/DS3231.pdf\nhttps://www.nxp.com/docs/en/data-sheet/PCF8523.pdf\nhttps://www.nxp.com/docs/en/data-sheet/PCF8563.pdf\nhttps://www.nxp.com/docs/en/data-sheet/PCF85063A.pdf\nhttps://www.nxp.com/docs/en/data-sheet/PCF85063TP.pdf\nhttps://cdn.sparkfun.com/assets/0/8/4/2/f/RV-1805-C3_App-Manual.pdf\nhttps://datasheet.lcsc.com/lcsc/2205310930_WAVE-SD3031_C2988356.pdf\n\n(Many thanks to Ralf Krause)"
   },
   {
     "file": "IGA.ubl",
@@ -45,12 +45,12 @@
     "description": "Support for AHT20 temperature and relative humidity sensor.\n\nhttps://files.seeedstudio.com/wiki/Grove-AHT20_I2C_Industrial_Grade_Temperature_and_Humidity_Sensor/AHT20-datasheet-2020-4-16.pdf"
   },
   {
-    "file": "ICR.ubl",
-    "download": "ICR.ubl",
-    "module_name": "Real Time Clock",
-    "module_type": "",
-    "author": "MicroBlocks",
-    "version": "1.9",
-    "description": "Real Time Clock (RTC)\n\nSimple functions to set and read the current time and date of a real-time clock module.\nWith a 3V coin cell battery intalled, the clock will maintain the time and date while powered off.\n\nCurrently supports the following RTC modules: DS1307, DS3231, PCF8523, PCF8563, PCF85063, RV1805, SD3031.\nMay be we will extend the list and support others in the future.\n\nhttps://www.analog.com/media/en/technical-documentation/data-sheets/DS1307.pdf\nhttps://www.analog.com/media/en/technical-documentation/data-sheets/DS3231.pdf\nhttps://www.nxp.com/docs/en/data-sheet/PCF8523.pdf\nhttps://www.nxp.com/docs/en/data-sheet/PCF8563.pdf\nhttps://www.nxp.com/docs/en/data-sheet/PCF85063A.pdf\nhttps://www.nxp.com/docs/en/data-sheet/PCF85063TP.pdf\nhttps://cdn.sparkfun.com/assets/0/8/4/2/f/RV-1805-C3_App-Manual.pdf\nhttps://datasheet.lcsc.com/lcsc/2205310930_WAVE-SD3031_C2988356.pdf\n\n(Many thanks to Ralf Krause)"
+    "file": "IWB.ubl",
+    "download": "IWB.ubl",
+    "module_name": "IWB",
+    "module_type": "Input",
+    "author": "José García Yeste",
+    "version": "1.0",
+    "description": "SPL06-001 Air pressure sensor\nTested on Springbot Demo Kit\nBase on https://github.com/ArtronShop/ArtronShop_SPL06-001/"
   }
 ]
