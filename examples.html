@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MicroBlocks Examples</title>
+  <style>
+    :root {
+      --bg: #1f1f1f;
+      --panel: rgba(34, 34, 34, 0.95);
+      --panel2: rgba(44, 44, 44, 0.98);
+      --border: rgba(255, 255, 255, 0.10);
+      --text: #f2f2f2;
+      --muted: #b8b8b8;
+      --accent: #18a0fb;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 24px;
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .wrap {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+    }
+
+    h1 {
+      margin: 0 0 10px 0;
+      text-align: center;
+    }
+
+    p {
+      color: var(--muted);
+      text-align: center;
+      margin: 0 0 20px 0;
+    }
+
+    .status {
+      text-align: center;
+      color: var(--muted);
+      margin-bottom: 16px;
+    }
+
+    .table-wrap { overflow-x: auto; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--panel2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      table-layout: fixed;
+    }
+
+    th, td {
+      width: 25%;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th { background: rgba(255,255,255,0.04); }
+    tr:last-child td { border-bottom: none; }
+
+    a.download-link {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    a.download-link:hover { text-decoration: underline; }
+
+    .meta {
+      color: var(--muted);
+      line-height: 1.45;
+      margin-top: 0.85em;
+    }
+
+    .desc {
+      white-space: pre-wrap;
+      line-height: 1.4;
+    }
+
+    .url-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45em;
+      color: var(--accent);
+      text-decoration: none;
+      margin-top: 0.45em;
+    }
+
+    .url-link:hover { text-decoration: underline; }
+
+    .svg-icon {
+      width: 2.4em;
+      height: 2.4em;
+      display: inline-block;
+      vertical-align: top;
+      background-color: currentColor;
+      -webkit-mask-repeat: no-repeat;
+      -webkit-mask-position: center;
+      -webkit-mask-size: contain;
+      mask-repeat: no-repeat;
+      mask-position: center;
+      mask-size: contain;
+      opacity: 0.95;
+      flex: 0 0 auto;
+    }
+
+    .example-image {
+      display: block;
+      max-width: 100%;
+      max-height: 220px;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: rgba(255,255,255,0.04);
+    }
+
+    .missing-image {
+      color: var(--muted);
+      font-style: italic;
+    }
+
+    .error { color: #ff9c9c; }
+
+    @media (max-width: 800px) {
+      table, thead, tbody, th, td, tr { display: block; }
+      thead { display: none; }
+      tr { border-bottom: 1px solid var(--border); }
+      tr:last-child { border-bottom: none; }
+      td {
+        width: 100%;
+        border-bottom: none;
+      }
+      td::before {
+        display: block;
+        color: var(--muted);
+        font-weight: bold;
+        margin-bottom: 6px;
+      }
+      td:nth-child(1)::before { content: "Example"; }
+      td:nth-child(2)::before { content: "Description"; }
+      td:nth-child(3)::before { content: "Code image"; }
+      td:nth-child(4)::before { content: "Story image"; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>MicroBlocks Examples</h1>
+    <p>Example .ubp files with description, code image, story image, and optional video/link.</p>
+    <div id="status" class="status">Loading...</div>
+    <div class="table-wrap">
+      <table id="examplesTable" hidden>
+        <thead>
+          <tr>
+            <th>Example</th>
+            <th>Description</th>
+            <th>Code Image</th>
+            <th>Story Image</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    function isYouTubeUrl(url) {
+      try {
+        const host = new URL(url).hostname.toLowerCase().replace(/^www\./, '');
+        return host === 'youtu.be' || host === 'youtube.com' || host.endsWith('.youtube.com');
+      } catch (err) {
+        return false;
+      }
+    }
+
+    function appendImageCell(td, filename, altText) {
+      if (!filename) {
+        td.textContent = '';
+        return;
+      }
+
+      const img = document.createElement('img');
+      img.className = 'example-image';
+      img.src = './examples/' + filename;
+      img.alt = altText || filename;
+
+      img.onerror = () => {
+        td.innerHTML = '';
+        const span = document.createElement('span');
+        span.className = 'missing-image';
+        span.textContent = filename + ' could not be displayed';
+        td.appendChild(span);
+      };
+
+      td.appendChild(img);
+    }
+
+    async function loadExamples() {
+      const status = document.getElementById('status');
+      const table = document.getElementById('examplesTable');
+      const tbody = table.querySelector('tbody');
+
+      try {
+        const response = await fetch('./examples/examples_index.json', { cache: 'no-store' });
+        if (!response.ok) {
+          throw new Error('Could not load examples/examples_index.json');
+        }
+
+        const data = await response.json();
+        tbody.innerHTML = '';
+
+        if (!Array.isArray(data) || data.length === 0) {
+          status.textContent = 'No example entries found.';
+          return;
+        }
+
+        for (const item of data) {
+          const tr = document.createElement('tr');
+
+          const tdExample = document.createElement('td');
+          const link = document.createElement('a');
+          link.className = 'download-link';
+          link.href = './examples/' + item.download;
+          link.download = item.download;
+          link.textContent = item.example_name || (item.download || '').replace(/\.ubp$/i, '');
+          tdExample.appendChild(link);
+
+          const meta = document.createElement('div');
+          meta.className = 'meta';
+          const version = item.version ? 'Version: ' + item.version : 'Version:';
+          const author = item.author ? 'Author: ' + item.author : 'Author:';
+          meta.appendChild(document.createTextNode(version));
+          meta.appendChild(document.createElement('br'));
+          meta.appendChild(document.createTextNode(author));
+
+          if (item.url) {
+            meta.appendChild(document.createElement('br'));
+            const urlLink = document.createElement('a');
+            urlLink.className = 'url-link';
+            urlLink.href = item.url;
+            urlLink.target = '_blank';
+            urlLink.rel = 'noopener noreferrer';
+            urlLink.title = item.url;
+
+            const icon = document.createElement('span');
+            icon.className = 'svg-icon';
+            const iconPath = './examples/' + (isYouTubeUrl(item.url) ? 'yt.svg' : 'url.svg');
+            icon.style.webkitMaskImage = 'url("' + iconPath + '")';
+            icon.style.maskImage = 'url("' + iconPath + '")';
+
+            const label = document.createElement('span');
+            label.textContent = isYouTubeUrl(item.url) ? 'YouTube' : 'Link';
+
+            urlLink.appendChild(icon);
+            urlLink.appendChild(label);
+            meta.appendChild(urlLink);
+          }
+
+          tdExample.appendChild(meta);
+
+          const tdDescription = document.createElement('td');
+          tdDescription.className = 'desc';
+          tdDescription.textContent = item.description || '';
+
+          const tdCodeImage = document.createElement('td');
+          appendImageCell(tdCodeImage, item.codeimage, (item.example_name || 'Example') + ' code image');
+
+          const tdStoryImage = document.createElement('td');
+          appendImageCell(tdStoryImage, item.storyimage, (item.example_name || 'Example') + ' story image');
+
+          tr.appendChild(tdExample);
+          tr.appendChild(tdDescription);
+          tr.appendChild(tdCodeImage);
+          tr.appendChild(tdStoryImage);
+          tbody.appendChild(tr);
+        }
+
+        status.textContent = 'Click an example name to download the .ubp file.';
+        table.hidden = false;
+      } catch (err) {
+        status.classList.add('error');
+        status.textContent = 'Failed to load examples/examples_index.json.';
+      }
+    }
+
+    loadExamples();
+  </script>
+</body>
+</html>
