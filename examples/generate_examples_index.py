@@ -53,6 +53,30 @@ def parse_simple_value(line: str, keyword: str) -> str:
     return unquote(line[len(keyword):].strip())
 
 
+def parse_files_line(line: str) -> list[str]:
+    """Parse a MicroBlocks-style files line.
+
+    Expected examples:
+      files qr.png happy.csv
+      files 'my file.pdf' "second file.txt"
+
+    Quoted filenames with spaces are supported. Bare filenames are split on
+    whitespace. Empty values are ignored.
+    """
+    rest = line[len("files"):].strip()
+    if not rest:
+        return []
+
+    matches = re.findall(r"'([^']*)'|\"([^\"]*)\"|(\S+)", rest)
+    files = []
+    for single_quoted, double_quoted, bare in matches:
+        value = single_quoted or double_quoted or bare
+        value = value.strip()
+        if value:
+            files.append(value)
+    return files
+
+
 def parse_ubp_file(path: Path) -> dict:
     text = path.read_text(encoding="utf-8", errors="replace")
     lines = text.splitlines()
@@ -67,6 +91,7 @@ def parse_ubp_file(path: Path) -> dict:
         "codeimage": "",
         "storyimage": "",
         "url": "",
+        "files": [],
     }
 
     saw_first_module = False
@@ -96,6 +121,8 @@ def parse_ubp_file(path: Path) -> dict:
                 data["storyimage"] = parse_simple_value(s, "storyimage")
             elif s.startswith("url "):
                 data["url"] = parse_simple_value(s, "url")
+            elif s.startswith("files "):
+                data["files"] = parse_files_line(s)
 
         i += 1
 

@@ -93,6 +93,34 @@
       line-height: 1.4;
     }
 
+    .desc a,
+    .file-link {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    .desc a:hover,
+    .file-link:hover { text-decoration: underline; }
+
+    .files-list {
+      margin-top: 0.9em;
+      padding-top: 0.75em;
+      border-top: 1px solid var(--border);
+      white-space: normal;
+    }
+
+    .files-title {
+      color: var(--muted);
+      font-size: 0.92em;
+      margin-bottom: 0.35em;
+    }
+
+    .file-link {
+      display: block;
+      line-height: 1.45;
+      overflow-wrap: anywhere;
+    }
+
     .url-link {
       display: inline-flex;
       align-items: center;
@@ -212,6 +240,82 @@
       return id || 'example';
     }
 
+    function appendTextWithLinks(parent, text) {
+      const source = String(text || '');
+      const urlRegex = /https?:\/\/[^\s<>'"]+/gi;
+      let lastIndex = 0;
+      let match;
+
+      while ((match = urlRegex.exec(source)) !== null) {
+        const rawUrl = match[0];
+        const start = match.index;
+
+        if (start > lastIndex) {
+          parent.appendChild(document.createTextNode(source.slice(lastIndex, start)));
+        }
+
+        let url = rawUrl;
+        let trailing = '';
+        while (/[.,;:!?)]$/.test(url)) {
+          trailing = url.slice(-1) + trailing;
+          url = url.slice(0, -1);
+        }
+
+        const a = document.createElement('a');
+        a.href = url;
+        a.target = '_blank';
+        a.rel = 'noopener noreferrer';
+        a.textContent = url;
+        parent.appendChild(a);
+
+        if (trailing) {
+          parent.appendChild(document.createTextNode(trailing));
+        }
+
+        lastIndex = match.index + rawUrl.length;
+      }
+
+      if (lastIndex < source.length) {
+        parent.appendChild(document.createTextNode(source.slice(lastIndex)));
+      }
+    }
+
+    function normaliseFiles(files) {
+      if (Array.isArray(files)) {
+        return files.filter(Boolean).map(String);
+      }
+
+      if (typeof files === 'string' && files.trim()) {
+        return files.trim().split(/\s+/).filter(Boolean);
+      }
+
+      return [];
+    }
+
+    function appendFilesList(parent, files) {
+      const list = normaliseFiles(files);
+      if (list.length === 0) return;
+
+      const div = document.createElement('div');
+      div.className = 'files-list';
+
+      const title = document.createElement('div');
+      title.className = 'files-title';
+      title.textContent = 'Files:';
+      div.appendChild(title);
+
+      for (const filename of list) {
+        const a = document.createElement('a');
+        a.className = 'file-link';
+        a.href = './examples/' + encodeURI(filename);
+        a.download = filename;
+        a.textContent = filename;
+        div.appendChild(a);
+      }
+
+      parent.appendChild(div);
+    }
+
     function appendImageCell(td, filename, altText) {
       if (!filename) {
         td.textContent = '';
@@ -307,7 +411,8 @@
 
           const tdDescription = document.createElement('td');
           tdDescription.className = 'desc';
-          tdDescription.textContent = item.description || '';
+          appendTextWithLinks(tdDescription, item.description || '');
+          appendFilesList(tdDescription, item.files);
 
           const tdCodeImage = document.createElement('td');
           appendImageCell(tdCodeImage, item.codeimage, (item.example_name || 'Example') + ' code image');
@@ -322,7 +427,7 @@
           tbody.appendChild(tr);
         }
 
-        status.textContent = 'Click an example name to download the .ubp file.';
+        status.textContent = 'Click a blue example name to download the .ubp file or drag the example name onto the MicroBlocks web app.';
         table.hidden = false;
       } catch (err) {
         status.classList.add('error');
