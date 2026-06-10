@@ -5,6 +5,7 @@ description 'Demonstrates use of Say and Comments'
 codeimage scriptImage67781117.png
 storyimage IMG_3549.heic
 url https://youtu.be/exqWY8sqC8A
+files qr.bmp happy.csv
 variables file line elements 
 
 script 447 179 {
