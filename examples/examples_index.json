@@ -4,10 +4,14 @@
     "download": "hejBjarke.ubp",
     "example_name": "hejBjarke",
     "author": "Bjarke Gotfredsen",
-    "version": "1.0",
+    "version": "1.1",
     "description": "Demonstrates use of Say and Comments",
-    "codeimage": "scriptImage67781117.png",
+    "codeimage": "scriptImage94796492.png",
     "storyimage": "IMG_3549.heic",
-    "url": "https://youtu.be/exqWY8sqC8A"
+    "url": "https://youtu.be/exqWY8sqC8A",
+    "files": [
+      "qr.bmp",
+      "happy.csv"
+    ]
   }
 ]
