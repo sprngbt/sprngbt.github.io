@@ -10,15 +10,8 @@
       "emis_number": "0116330388",
       "school_name": "DE WAALVILLE PRIMÊRE SKOOL",
       "district": "EDEN AND CENTRAL KAROO (01)",
-      "district_council_municipality": "GARDEN ROUTE / HESSEQUA",
-      "school_type": "Primary School",
-      "school_status": "Open",
-      "language_of_teaching": "Afrikaans",
-      "physical_address": "STEWARTSTRAAT",
       "phone": "028-7221732",
-      "principal": "MR RM JACOBS",
-      "section21": "Yes",
-      "fee_status": "No Fee"
+      "principal": "MR RM JACOBS"
     }
   },
   {
@@ -32,15 +25,8 @@
       "emis_number": "0139208200",
       "school_name": "BEAUFORT WES VOORBEREIDINGSKOOL",
       "district": "EDEN AND CENTRAL KAROO (07)",
-      "district_council_municipality": "CENTRAL KAROO / BEAUFORT WEST",
-      "school_type": "Primary School",
-      "school_status": "Open",
-      "language_of_teaching": "Par: Afr/Eng",
-      "physical_address": "7 DE VILLIERS STREET",
       "phone": "023-4142457",
-      "principal": "MRS L Nortje",
-      "section21": "Yes",
-      "fee_status": "Fee charging"
+      "principal": "MRS L Nortje"
     }
   },
   {
@@ -54,15 +40,8 @@
       "emis_number": "0100000091",
       "school_name": "CEDERBERG ACADEMY",
       "district": "WEST COAST (04)",
-      "district_council_municipality": "WEST COAST / CEDERBERG",
-      "school_type": "Secondary School",
-      "school_status": "Open",
-      "language_of_teaching": "Afrikaans",
-      "physical_address": "HEUWELSINGEL",
       "phone": "022-9213106",
-      "principal": "MR SM KLEIN",
-      "section21": "No",
-      "fee_status": "Fee charging"
+      "principal": "MR SM KLEIN"
     }
   },
   {
@@ -76,15 +55,8 @@
       "emis_number": "0142212240",
       "school_name": "ZWARTBERG HOËRSKOOL",
       "district": "EDEN AND CENTRAL KAROO (07)",
-      "district_council_municipality": "CENTRAL KAROO / PRINCE ALBERT",
-      "school_type": "Secondary School",
-      "school_status": "Open",
-      "language_of_teaching": "Afrikaans",
-      "physical_address": "PASTORIESTRAAT, PRINCE ALBERT",
       "phone": "023-5411570",
-      "principal": "MR J IZAKS",
-      "section21": "Yes",
-      "fee_status": ""
+      "principal": "MR J IZAKS"
     }
   },
   {
@@ -98,15 +70,8 @@
       "emis_number": "0116330388",
       "school_name": "DE WAALVILLE PRIMÊRE SKOOL",
       "district": "EDEN AND CENTRAL KAROO (01)",
-      "district_council_municipality": "GARDEN ROUTE / HESSEQUA",
-      "school_type": "Primary School",
-      "school_status": "Open",
-      "language_of_teaching": "Afrikaans",
-      "physical_address": "STEWARTSTRAAT",
       "phone": "028-7221732",
-      "principal": "MR RM JACOBS",
-      "section21": "Yes",
-      "fee_status": "No Fee"
+      "principal": "MR RM JACOBS"
     }
   },
   {
@@ -120,15 +85,8 @@
       "emis_number": "0139208200",
       "school_name": "BEAUFORT WES VOORBEREIDINGSKOOL",
       "district": "EDEN AND CENTRAL KAROO (07)",
-      "district_council_municipality": "CENTRAL KAROO / BEAUFORT WEST",
-      "school_type": "Primary School",
-      "school_status": "Open",
-      "language_of_teaching": "Par: Afr/Eng",
-      "physical_address": "7 DE VILLIERS STREET",
       "phone": "023-4142457",
-      "principal": "MRS L Nortje",
-      "section21": "Yes",
-      "fee_status": "Fee charging"
+      "principal": "MRS L Nortje"
     }
   },
   {
@@ -142,15 +100,8 @@
       "emis_number": "0100000091",
       "school_name": "CEDERBERG ACADEMY",
       "district": "WEST COAST (04)",
-      "district_council_municipality": "WEST COAST / CEDERBERG",
-      "school_type": "Secondary School",
-      "school_status": "Open",
-      "language_of_teaching": "Afrikaans",
-      "physical_address": "HEUWELSINGEL",
       "phone": "022-9213106",
-      "principal": "MR SM KLEIN",
-      "section21": "No",
-      "fee_status": "Fee charging"
+      "principal": "MR SM KLEIN"
     }
   }
 ]
