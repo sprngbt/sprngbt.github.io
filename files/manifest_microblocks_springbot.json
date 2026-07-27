@@ -1,6 +1,6 @@
 {
     "name": "domino4 MicroBlocks",
-    "version": "399",
+    "version": "405",
     "new_install_prompt_erase": true,
     "builds": [
         {
