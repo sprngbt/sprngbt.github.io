@@ -1,0 +1,9 @@
+module Main
+author Judi Sandrock
+version 1 0
+description 'This MicroBlocks program turns the Springbot into a simple environmental monitoring instrument. It continuously measures atmospheric pressure, air temperature and relative humidity using the Springbot’s onboard sensors, then displays the current readings and their units on the OLED screen. The display refreshes every two seconds, allowing learners to observe how environmental conditions change over time.'
+codeimage Temp_RelH_AtmP_OLED.png
+storyimage Temp_RelH_AtmP_OLED.png
+url
+files 
+Code Temp_RelH_AtmP_OLED.ubp

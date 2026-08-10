@@ -1,0 +1,5 @@
+module main
+author Bjarke Gotfredsen
+version 1 0
+description 'Install on one Green and on one Gold. The Green will send data to the Gold'
+codeimage ESPnow.png

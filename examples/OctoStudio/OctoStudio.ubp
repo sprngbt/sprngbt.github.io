@@ -1,0 +1,265 @@
+module main
+author unknown
+version 1 0 
+description ''
+
+script 278 104 {
+whenCondition (octoBeamReceived)
+comment 'Install Octostudio on a smart device:
+https://octostudio.org
+
+Note: Will only work if you connect to the Springbot using BLE'
+comment 'PlayStation controller style: Square=Left, Circle=Right, Triangle=Forward, Cross=Backward'
+if (octoLastBeamWas 'octo;square') {
+  displayCharacter '<'
+}
+if (octoLastBeamWas 'octo;circle') {
+  displayCharacter '>'
+}
+waitMillis 500
+'[display:mbDisplayOff]'
+}
+
+
+module 'LED Display' Output
+author MicroBlocks
+version 1 15 
+choices led_imageMenu heart 'small heart' yes no happy sad confused angry asleep surprised silly fabulous meh 't-shirt' 'roller skate' duck house tortoise butterfly 'stick figure' ghost sword giraffe skull umbrella snake rabbit cow 'quarter note' 'eight note' pitchfork target triangle 'left triangle' 'chess board' diamond 'small diamond' square 'small square' scissors 
+description 'Display primitives for the 5x5 LED display on the BBC micro:bit, Calliope mini and M5Atom Matrix. Boards with TFT displays (such as the Citilab ED1 or the M5Stack family) support these primitives with a simulated "fat pixel" display.
+'
+variables _stop_scrolling_text 
+
+  spec ' ' '[display:mbDisplay]' 'display _' 'microbitDisplay' 15237440
+  spec ' ' 'led_displayImage' 'display image _ : x _ y _' 'menu.led_imageMenu num num' 'happy' 1 1
+  spec ' ' '[display:mbDisplayOff]' 'clear display'
+  space
+  spec ' ' '[display:mbPlot]' 'plot x _ y _' 'num num' 3 3
+  spec ' ' '[display:mbUnplot]' 'unplot x _ y _' 'num num' 3 3
+  space
+  spec ' ' 'displayCharacter' 'display character _' 'str' 'A'
+  spec ' ' 'scroll_text' 'scroll text _ : pausing _ ms' 'str num' 'HELLO ROSA!' 100
+  spec ' ' 'stopScrollingText' 'stop scrolling'
+  advanced
+  spec ' ' 'set display color' 'set display color _' 'color'
+  spec 'r' 'led_image' 'LED image #BR# _' 'microbitDisplay' 15237440
+  space
+  spec 'r' '_led_namedImage' '_led_namedImage _' 'menu.led_imageMenu' 'happy'
+  spec 'r' '_led_imageData' '_led_imageData'
+
+to '_led_imageData' {
+  return 'heart:4685802,small heart:145728,yes:2269696,no:18157905,happy:15237440,sad:18284864,confused:22348096,angry:23036241,asleep:459616,surprised:4526090,silly:25984017,fabulous:15008639,meh:2236443,t-shirt:15154043,roller skate:11534104,duck:489702,house:10976708,tortoise:359872,butterfly:29332475,stick figure:18158564,ghost:23068334,sword:4657284,giraffe:10946627,skull:15171246,umbrella:6460398,snake:469859,rabbit:16104613,cow:4685361,quarter note:7573636,eight note:7590276,pitchfork:4357813,target:4681156,triangle:1026176,left triangle:32805985,chess board:11184810,diamond:4539716,small diamond:141440,square:33080895,small square:469440,scissors:20287859,'
+}
+
+to '_led_namedImage' name {
+  local 'data' ('_led_imageData')
+  local 'i' ('[data:find]' name data)
+  if (i == -1) {
+    comment 'Name not found'
+    return 0
+  }
+  local 'start' (('[data:find]' ':' data i) + 1)
+  local 'end' (('[data:find]' ',' data i) - 1)
+  return ('[data:convertType]' ('[data:copyFromTo]' data start end) 'number')
+}
+
+to displayCharacter s {
+  s = ('[data:join]' '' s)
+  if ((size s) == 0) {
+    '[display:mbDisplayOff]'
+    return 0
+  }
+  '[display:mbDrawShape]' ('[display:mbShapeForLetter]' (at 1 s)) 1 1
+}
+
+to led_displayImage imageName optionalX optionalY {
+  local 'image' imageName
+  if (isType image 'string') {
+    image = ('_led_namedImage' imageName)
+  }
+  '[display:mbDrawShape]' image (argOrDefault 2 1) (argOrDefault 3 1)
+}
+
+to led_image twentyFiveBitInt {
+  comment 'An LED image is a 25-bit integer'
+  return twentyFiveBitInt
+}
+
+to scroll_text text optionalDelay {
+  text = ('[data:join]' '' text)
+  local 'delay' 100
+  if ((pushArgCount) > 1) {
+    delay = optionalDelay
+  }
+  _stop_scrolling_text = (booleanConstant false)
+  if ('Pico:ed' == (boardType)) {
+    for position (((size text) * 6) + 18) {
+      if _stop_scrolling_text {return 0}
+      '[display:mbDisplayOff]'
+      '[tft:text]' text (17 - position) 0 (colorSwatch 125 125 125 255) 1 true
+      waitMillis (delay / 2)
+    }
+  } (or ('KidsIOT' == (boardType)) ('CodingBox' == (boardType))) {
+    for position (((size text) * 6) + 21) {
+      if _stop_scrolling_text {return 0}
+      '[tft:deferUpdates]'
+      '[tft:clear]'
+      '[tft:text]' text (128 - (6 * position)) 6 (colorSwatch 255 255 255 255) 6 false
+      '[tft:resumeUpdates]'
+      waitMillis (delay / 8)
+    }
+  } else {
+    for position (((size text) * 6) + 6) {
+      if _stop_scrolling_text {return 0}
+      for i (size text) {
+        '[display:mbDrawShape]' ('[display:mbShapeForLetter]' ('[data:unicodeAt]' i text)) (((i * 6) + 2) - position) 1
+      }
+      waitMillis delay
+    }
+  }
+}
+
+to 'set display color' color {
+  '[display:mbSetColor]' color
+}
+
+to stopScrollingText {
+  _stop_scrolling_text = (booleanConstant true)
+  waitMillis 10
+  '[display:mbDisplayOff]'
+}
+
+
+module OctoStudio Comm
+author wwj718
+version 1 12 
+choices octo_shapes 'octo;circle' 'octo;square' 'octo;star' 'octo;heart' 'octo;triangle' 'octo;clover' 'octo;diamond' 'octo;moon' 
+description 'Communicate with OctoStudio (https://octostudio.org/)
+'
+variables _octoGroup _octoLastBeamShape _octoLastBeamGroup _octoShapes _octoIsBeaming 
+
+  spec ' ' 'octoSendBeam' 'Octo beam to phones _ : duration _ ms : group _' 'menu.octo_shapes num num' 'octo;heart' 200 0
+  space
+  spec 'r' 'octoBeamReceived' 'Octo beam received?'
+  spec 'r' 'octoLastBeam' 'Octo last beam'
+  spec 'r' 'octoLastBeamWas' 'Octo last beam was _' 'menu.octo_shapes' 'octo;heart'
+  space
+  spec ' ' 'octoSetGroup' 'Octo set group _ (0-99)' 'auto' ''
+  advanced
+  spec 'r' 'octoLastGroup' 'Octo last beam group'
+  space
+  spec ' ' '_octoInit' '_octoInit'
+  spec 'r' '_octoShapeForID' '_octoShapeForID _' 'num' 1
+  spec 'r' '_octoMakeMessage' '_octoMakeMessage _ group _' 'menu.octo_shapes num' 'octo;heart' 0
+  spec 'r' '_octoHexDigit' '_octoHexDigit _' 'num' 10
+
+to '_octoHexDigit' n {
+  return (at ((n & 15) + 1) '0123456789ABCDEF')
+}
+
+to '_octoInit' {
+  if (_octoShapes == 0) {_octoShapes = ('[data:makeList]' 'circle' 'square' 'star' 'heart' 'triangle' 'clover' 'diamond' 'moon')}
+}
+
+to '_octoMakeMessage' shape group {
+  comment 'Mimic iOS, eg: ECA7059C00000001'
+  '_octoInit'
+  local 'result' ('[data:makeList]')
+  repeat 8 {
+    '[data:addLast]' (at 'random' '0123456789ABCDEF') result
+  }
+  repeat 4 {
+    '[data:addLast]' 0 result
+  }
+  if (('[data:find]' 'octo;' shape) == 1) {
+    comment 'Remove ''octo;'' prefix from menu selection'
+    shape = ('[data:copyFromTo]' shape 6)
+  }
+  local 'shapeNum' (('[data:find]' shape _octoShapes) - 1)
+  if (shapeNum < 0) {
+    if (isType shape 'number') {
+      shapeNum = shape
+    } else {
+      return 'Unknown shape'
+    }
+  }
+  comment 'Add group as two hexadecimal digits.'
+  '[data:addLast]' ('_octoHexDigit' ((group >> 4) & 15)) result
+  '[data:addLast]' ('_octoHexDigit' (group & 15)) result
+  comment 'Allow for up to 256 shapes encoded as two hexadecimal digits.'
+  '[data:addLast]' ('_octoHexDigit' ((shapeNum >> 4) & 15)) result
+  '[data:addLast]' ('_octoHexDigit' (shapeNum & 15)) result
+  return ('[data:joinStrings]' result)
+}
+
+to '_octoShapeForID' id {
+  '_octoInit'
+  if (and (0 <= id) (id < (size _octoShapes))) {
+    return (at (id + 1) _octoShapes)
+  }
+  comment 'If id is out of the shape range, return it as a number.'
+  return id
+}
+
+to octoBeamReceived {
+  comment 'Return true if a new beam has been received. Use "Octo last beam" to get its value.'
+  local 'newBeam' ('[ble:octoReceive]')
+  if (newBeam == (booleanConstant false)) {
+    return (booleanConstant false)
+  }
+  local 'beamGroup' ((newBeam >> 8) & 255)
+  if (or ('' == _octoGroup) (beamGroup == _octoGroup)) {
+    _octoLastBeamShape = ('_octoShapeForID' (newBeam & 255))
+    _octoLastBeamGroup = beamGroup
+    return (booleanConstant true)
+  }
+  return (booleanConstant false)
+}
+
+to octoLastBeam {
+  comment 'Return the name of the last shape received.'
+  if (_octoLastBeamShape == 0) {
+    return 'None'
+  }
+  return _octoLastBeamShape
+}
+
+to octoLastBeamWas shape {
+  comment 'Return true if the last beam was the given shape.'
+  if (isType shape 'number') {
+    comment 'If argument was a number, convert it to a shape name.'
+    shape = ('_octoShapeForID' shape)
+  } (('[data:find]' 'octo;' shape) == 1) {
+    comment 'Remove ''octo;'' prefix from menu selection'
+    shape = ('[data:copyFromTo]' shape 6)
+  }
+  return (shape == _octoLastBeamShape)
+}
+
+to octoLastGroup {
+  comment 'Return the group of the last beam received.'
+  if (_octoLastBeamShape == 0) {
+    return -1
+  }
+  return _octoLastBeamGroup
+}
+
+to octoSendBeam shape optionalDuration optionalGroup {
+  local 'duration' (argOrDefault 2 500)
+  local 'group' (argOrDefault 3 ('[data:convertType]' _octoGroup 'number'))
+  if (_octoIsBeaming == 1) {
+    sayIt 'waiting...'
+    waitUntil (_octoIsBeaming == 0)
+    sayIt ''
+  }
+  _octoIsBeaming = 1
+  '[ble:octoStartBeam]' ('_octoMakeMessage' shape group)
+  waitMillis duration
+  '[ble:octoStopBeam]'
+  _octoIsBeaming = 0
+}
+
+to octoSetGroup group {
+  comment 'Setting the group to the empty string will receive beams from all groups.'
+  _octoGroup = group
+}
+
