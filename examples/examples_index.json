@@ -1,17 +1,52 @@
 [
   {
-    "file": "hejBjarke.ubp",
-    "download": "hejBjarke.ubp",
-    "example_name": "hejBjarke",
+    "file": "ESPnow.ubp",
+    "download": "ESPnow.ubp",
+    "example_name": "ESPnow",
     "author": "Bjarke Gotfredsen",
-    "version": "1.1",
-    "description": "Demonstrates use of Say and Comments",
-    "codeimage": "scriptImage94796492.png",
-    "storyimage": "IMG_3549.heic",
-    "url": "https://youtu.be/exqWY8sqC8A",
+    "version": "1.0",
+    "description": "Install on one Green and on one Gold. The Green will send data to the Gold",
+    "codeimage": "ESPnow.png",
+    "storyimage": "",
+    "url": "",
+    "files": []
+  },
+  {
+    "file": "OctoStudio.ubp",
+    "download": "OctoStudio.ubp",
+    "example_name": "OctoStudio",
+    "author": "Bjarke Gotfredsen",
+    "version": "1.0",
+    "description": "Download OctoStudio on your iOS/Android device. Install the attached file in OctoStudio",
+    "codeimage": "OctoStudio.png",
+    "storyimage": "",
+    "url": "",
     "files": [
-      "qr.bmp",
-      "happy.csv"
+      "OctoStudio.octostudio"
     ]
+  },
+  {
+    "file": "OLED_display_Temp.ubp",
+    "download": "OLED_display_Temp.ubp",
+    "example_name": "OLED_display_Temp",
+    "author": "Judi Sandrock",
+    "version": "1.0",
+    "description": "Adding the OLED to the Springbot Green",
+    "codeimage": "OLED_display_Temp.png",
+    "storyimage": "OLED_Springbot_Green.png",
+    "url": "https://youtu.be/KQHjOIY4xkI",
+    "files": []
+  },
+  {
+    "file": "Temp_RelH_AtmP_OLED.ubp",
+    "download": "Temp_RelH_AtmP_OLED.ubp",
+    "example_name": "Temp_RelH_AtmP_OLED",
+    "author": "Judi Sandrock",
+    "version": "1.0",
+    "description": "This MicroBlocks program turns the Springbot into a simple environmental monitoring instrument. It continuously measures atmospheric pressure, air temperature and relative humidity using the Springbot’s onboard sensors, then displays the current readings and their units on the OLED screen. The display refreshes every two seconds, allowing learners to observe how environmental conditions change over time.",
+    "codeimage": "Temp_RelH_AtmP_OLED.png",
+    "storyimage": "Temp_RelH_AtmP_OLED.png",
+    "url": "",
+    "files": []
   }
 ]

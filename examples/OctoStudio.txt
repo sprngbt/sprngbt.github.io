@@ -1,0 +1,6 @@
+module main
+author Bjarke Gotfredsen
+version 1 0
+description 'Download OctoStudio on your iOS/Android device. Install the attached file in OctoStudio'
+codeimage OctoStudio.png
+files OctoStudio.octostudio
