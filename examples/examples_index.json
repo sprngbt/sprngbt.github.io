@@ -38,6 +38,18 @@
     "files": []
   },
   {
+    "file": "ParklandsSpringbotISS/ParklandsSpringbotISS.ubp",
+    "download": "ParklandsSpringbotISS/ParklandsSpringbotISS.ubp",
+    "example_name": "ParklandsSpringbotISS",
+    "author": "Bjarke Gotfredsen",
+    "version": "1.0",
+    "description": "Example of the code Parklands College would send on a Springbot to the ISS. You need a RTC (ICR) and a Pressure Sensor (IWB)",
+    "codeimage": "ParklandsSpringbotISS/ParklandsSpringbotISS.png",
+    "storyimage": "",
+    "url": "",
+    "files": []
+  },
+  {
     "file": "Temp RH AtmP OLED/Temp_RelH_AtmP_OLED.ubp",
     "download": "Temp RH AtmP OLED/Temp_RelH_AtmP_OLED.ubp",
     "example_name": "Temp_RelH_AtmP_OLED",

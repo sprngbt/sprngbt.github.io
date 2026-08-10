@@ -1,0 +1,854 @@
+module main
+author unknown
+version 1 0 
+description ''
+variables fileno filename currentFilename 
+
+  spec ' ' 'allOK' 'allOK'
+  spec 'r' 'getFilename' 'getFilename'
+  spec ' ' 'write2SD' 'write2SD _ _' 'auto auto' '10' '10'
+
+to allOK {
+  comment 'Check if there is a SD Card inserted.
+If not, red LED, and text forever'
+  if (not ('[sd:hasCard]')) {
+    springbot_setColorLED (springbot_colorSwatch (colorSwatch 255 0 0 255))
+    forever {
+      scroll_text '-SD' 25
+    }
+  }
+  comment 'Check if IWB is connected.
+If not, yellow LED, and text,
+but continue otherwise.'
+  if (not ('spl06 connected')) {
+    springbot_setColorLED (springbot_colorSwatch (colorSwatch 255 255 0 255))
+    scroll_text '-IWB' 25
+  }
+}
+
+to getFilename {
+  comment 'Lets find an unused filename Dxxx.csv, where xxx is a number.
+We start with number 0'
+  fileno = 0
+  forever {
+    comment 'Join the D, the filenumber and ".csv" together to create a filename'
+    filename = ('[data:joinStrings]' ('[data:makeList]' 'D' fileno '.csv'))
+    comment 'If the file does NOT exist, then let us use it.
+Return the unused filename.'
+    if (not ('[sd:fileExists]' filename)) {
+      return filename
+    }
+    comment 'But if does exist, we will end here.
+So let change the file number with 1,
+So the next file would be ''D1.csv'', then
+''D2.csv'', etc.'
+    fileno += 1
+  }
+}
+
+to write2SD fn record {
+  comment 'First start in a parallel task a flash red LED '
+  sendBroadcast 'flashRed'
+  comment 'Open the file passed to the block,
+then write the list of data passed over, but separated with a
+comma. And close the file, to ensure data is written.'
+  '[sd:open]' fn
+  '[sd:appendLine]' ('[data:joinStrings]' record ',') fn
+  '[sd:close]' fn
+}
+
+script 907 54 {
+to write2SD {}
+}
+
+script 1405 73 {
+to getFilename {}
+}
+
+script 50 78 {
+whenStarted
+comment 'Get an unused filename'
+currentFilename = (getFilename)
+sayIt (getFilename)
+comment 'Set LED to green, I might change it later if something is wrong'
+springbot_setColorLED (springbot_colorSwatch (colorSwatch 0 127 0 255))
+comment 'Check if everything is OK'
+allOK
+comment 'Write the header to the new SD Card file'
+write2SD currentFilename ('[data:makeList]' 'Elapsed' 'Date' 'Time' 'IWB Temp' 'IWB Pressure' 'IWA Temp' 'IWA Humidity' 'Acceleration' 'X' 'Y' 'Z' 'Light')
+forever {
+  comment 'Run in a loop and every 5 seconds, write data to SD Card'
+  waitMillis 5000
+  write2SD currentFilename ('[data:makeList]' (secsOp) (rtc_getTimeOrDate 'date (Y-M-D)') (rtc_getTimeOrDate 'time (H:M:S)') ('spl06 temperature (°C)') ('spl06 air pressure') (IWA_temperature) (IWA_humidity) ('[sensors:acceleration]') ('[sensors:tiltX]') ('[sensors:tiltY]') ('[sensors:tiltZ]') ('[display:lightLevel]'))
+}
+}
+
+script 574 217 {
+to allOK {}
+}
+
+script 927 479 {
+whenBroadcastReceived 'flashRed'
+comment 'Run this task without
+interupting the main task.
+Red LED on for 1/2 second.'
+setUserLED true
+waitMillis 500
+setUserLED false
+}
+
+
+module ICR
+author MicroBlocks
+version 1 9 
+choices rtc_timeOrDate 'time (H:M:S)' 'date (Y-M-D)' 
+choices rtc_modules '' DS1307 DS3231 PCF8523 PCF8563 PCF85063 RV1805 SD3031 
+choices rtc_component second minute hour day month year 'day of week' 
+description 'Real Time Clock (RTC)
+
+Simple functions to set and read the current time and date of a real-time clock module.
+With a 3V coin cell battery intalled, the clock will maintain the time and date while powered off.
+
+Currently supports the following RTC modules: DS1307, DS3231, PCF8523, PCF8563, PCF85063, RV1805, SD3031.
+May be we will extend the list and support others in the future.
+
+https://www.analog.com/media/en/technical-documentation/data-sheets/DS1307.pdf
+https://www.analog.com/media/en/technical-documentation/data-sheets/DS3231.pdf
+https://www.nxp.com/docs/en/data-sheet/PCF8523.pdf
+https://www.nxp.com/docs/en/data-sheet/PCF8563.pdf
+https://www.nxp.com/docs/en/data-sheet/PCF85063A.pdf
+https://www.nxp.com/docs/en/data-sheet/PCF85063TP.pdf
+https://cdn.sparkfun.com/assets/0/8/4/2/f/RV-1805-C3_App-Manual.pdf
+https://datasheet.lcsc.com/lcsc/2205310930_WAVE-SD3031_C2988356.pdf
+
+(Many thanks to Ralf Krause)
+'
+variables rtc_i2cAddr rtc_module rtc_registerMap 
+
+  spec 'r' 'rtc_getTimeOrDate' 'clock _' 'menu.rtc_timeOrDate' 'time (H:M:S)'
+  spec 'r' 'rtc_getComponent' 'clock _' 'menu.rtc_component' 'second'
+  space
+  spec ' ' 'rtc_setTime' 'set hours _ minutes _ seconds _' 'num num num' 9 30 0
+  spec ' ' 'rtc_setDate' 'set year _ month _ day _' 'num num num' 2025 1 1
+  spec ' ' 'rtc_setDayOfWeek' 'set day of week _ (1-7)' 'num' 1
+  advanced
+  spec ' ' 'rtc_initModule' 'init clock _' 'menu.rtc_modules' ''
+  space
+  spec ' ' '_rtc_init' '_rtc_init'
+  spec 'r' '_rtc_bcd2dec' '_rtc_bcd2dec _' 'num'
+  spec 'r' '_rtc_dec2bcd' '_rtc_dec2bcd _' 'num'
+  spec 'r' '_rtc_twoDigit' '_rtc_twoDigit _' 'num'
+  spec 'r' '_rtc_getReg' '_rtc_get_register _' 'num' 0
+  spec ' ' '_rtc_setReg' '_rtc_set_register _ to _' 'num num' 0 0
+  spec 'r' '_rtc_mapRegNum' '_rtc_map_register_number _' 'num' 0
+  spec 'r' '_rtc_testReg' '_rtc_test_register _ with _' 'num num' 0 0
+  spec 'r' '_rtc_testRegSeconds' '_rtc_test_register _ for seconds?' 'num' 0
+  spec ' ' '_rtc_set_SD3031_writable' '_rtc_set_SD3031_writable _' 'bool' true
+
+to '_rtc_bcd2dec' bcd {
+  comment 'Convert an 8-bit "binary-coded decimal" number to a decimal number in range 0-99'
+  return (((bcd / 16) * 10) + (bcd % 16))
+}
+
+to '_rtc_dec2bcd' decimal {
+  comment 'Convert a decimal in range 0-99 to an 8-bit "binary-coded decimal" value.'
+  decimal = (maximum 0 (minimum decimal 99))
+  return (((decimal / 10) * 16) + (decimal % 10))
+}
+
+to '_rtc_getReg' reg {
+  '_rtc_init'
+  if (rtc_i2cAddr == 0) {
+    return
+  }
+  '[sensors:i2cSetClockSpeed]' 100000
+  local 'result' (i2cGet rtc_i2cAddr ('_rtc_mapRegNum' reg))
+  '[sensors:i2cSetClockSpeed]' 400000
+  return result
+}
+
+to '_rtc_init' {
+  if (rtc_i2cAddr != 0) {return}
+  if ('[sensors:i2cExists]' (hexToInt '51')) {
+    rtc_i2cAddr = (hexToInt '51')
+    comment 'PCF8563 uses register 0x02 for seconds.
+PCF85063 uses register 0x04 for seconds.'
+    if ('_rtc_testRegSeconds' (hexToInt '02')) {
+      rtc_initModule 'PCF8563'
+    } else {
+      rtc_initModule 'PCF85063'
+    }
+  } ('[sensors:i2cExists]' (hexToInt '68')) {
+    rtc_i2cAddr = (hexToInt '68')
+    comment 'DS1307 has register 0x3F.
+DS3231 uses register 0x00 for seconds.
+PCF8523 uses register 0x03 for seconds.'
+    if (and ('_rtc_testReg' (hexToInt '3F') (hexToInt 'AA')) ('_rtc_testReg' (hexToInt '3F') (hexToInt '55'))) {
+      rtc_initModule 'DS1307'
+    } else {
+      if ('_rtc_testRegSeconds' (hexToInt '00')) {
+        rtc_initModule 'DS3231'
+      } else {
+        rtc_initModule 'PCF8523'
+      }
+    }
+  } ('[sensors:i2cExists]' (hexToInt '69')) {
+    rtc_i2cAddr = (hexToInt '69')
+    comment 'RV1805
+No other RTC module uses this i2c address.'
+    rtc_initModule 'RV1805'
+  } ('[sensors:i2cExists]' (hexToInt '32')) {
+    rtc_i2cAddr = (hexToInt '32')
+    comment 'SD3031
+No other RTC module uses this i2c address.'
+    rtc_initModule 'SD3031'
+  } else {
+    comment 'No RTC module found.'
+    rtc_i2cAddr = 0
+    rtc_module = ''
+    rtc_registerMap = ''
+    sayIt 'No RTC module found.'
+  }
+}
+
+to '_rtc_mapRegNum' reg {
+  return (hexToInt (at (reg + 1) ('[data:join]' '' rtc_registerMap)))
+}
+
+to '_rtc_setReg' reg value {
+  '_rtc_init'
+  if (rtc_i2cAddr == 0) {
+    return
+  }
+  '[sensors:i2cSetClockSpeed]' 100000
+  i2cSet rtc_i2cAddr ('_rtc_mapRegNum' reg) value
+  '[sensors:i2cSetClockSpeed]' 400000
+}
+
+to '_rtc_set_SD3031_writable' on {
+  if on {
+    comment 'SD3031 write enable
+1. set WRTC1 = 1 (register 0x10 bit 7)
+2. set WRTC2 = 1 and WRTC3 = 1 (register 0x0F bit7 and bit2)'
+    i2cSet rtc_i2cAddr (hexToInt '10') ((i2cGet rtc_i2cAddr (hexToInt '10')) | 128)
+    i2cSet rtc_i2cAddr (hexToInt '0F') ((i2cGet rtc_i2cAddr (hexToInt '0F')) | 132)
+  } else {
+    comment 'SD3031 write disable
+1. set WRTC2 = 0 and WRTC3 = 0 (register 0x0F bit7 and bit2)
+2. set WRTC1 = 0 (register 0x10 bit 7)'
+    i2cSet rtc_i2cAddr (hexToInt '0F') ((i2cGet rtc_i2cAddr (hexToInt '0F')) & 123)
+    i2cSet rtc_i2cAddr (hexToInt '10') ((i2cGet rtc_i2cAddr (hexToInt '10')) & 127)
+  }
+}
+
+to '_rtc_testReg' reg num {
+  if (rtc_i2cAddr == 0) {return 0}
+  comment 'Test if the register exists and can be set to number.'
+  '[sensors:i2cSetClockSpeed]' 100000
+  local 't' (i2cGet rtc_i2cAddr reg)
+  i2cSet rtc_i2cAddr reg num
+  local 'result' ((i2cGet rtc_i2cAddr reg) == num)
+  if (and (0 <= t) (t <= 255)) {
+    i2cSet rtc_i2cAddr reg t
+  }
+  '[sensors:i2cSetClockSpeed]' 400000
+  return result
+}
+
+to '_rtc_testRegSeconds' reg {
+  comment 'Read the register three times to get the values t0, t1, and t2.'
+  '[sensors:i2cSetClockSpeed]' 100000
+  local 't0' (i2cGet rtc_i2cAddr reg)
+  waitMillis 1000
+  local 't1' (i2cGet rtc_i2cAddr reg)
+  waitMillis 1000
+  local 't2' (i2cGet rtc_i2cAddr reg)
+  '[sensors:i2cSetClockSpeed]' 400000
+  local 'result' (and (t2 > t1) (t1 > t0))
+  comment 'If the result is false perhaps the second gets 0 and the next minute starts.'
+  if (t1 == 0) {
+    result = (and (t0 > 0) (t2 > t1))
+  }
+  if (t2 == 0) {
+    result = (and (t0 > 0) (t1 > t0))
+  }
+  return result
+}
+
+to '_rtc_twoDigit' n {
+  comment 'Return a two-digit decimal representation for n (range 0-99).'
+  decimal = (maximum 0 (minimum n 99))
+  return ('[data:join]' (ifExpression (n < 10) '0' '') n)
+}
+
+to rtc_getComponent which {
+  local 'component' ('[data:makeList]' 'second' 'minute' 'hour' 'day of week' 'day' 'month' 'year')
+  local 'reg' (('[data:find]' which component) - 1)
+  if (reg < 0) {
+    return ''
+  }
+  local 'result' ('_rtc_getReg' reg)
+  if (or ('second' == which) ('minute' == which)) {
+    return ('_rtc_bcd2dec' (result & 127))
+  } (or ('hour' == which) ('day' == which)) {
+    return ('_rtc_bcd2dec' (result & 63))
+  } ('month' == which) {
+    return ('_rtc_bcd2dec' (result & 31))
+  } ('year' == which) {
+    return (('_rtc_bcd2dec' result) + 2000)
+  } ('day of week' == which) {
+    result = (result & 7)
+    if (0 < ('[data:find]' rtc_module ('[data:makeList]' 'PCF8523' 'PCF8563' 'PCF85063' 'RV1805''SD3031'))) {
+      comment 'Clock uses weekday range 0-6.'
+      if (result == 0) {
+        result = 7
+      }
+    }
+    return result
+  } else {
+    return ''
+  }
+}
+
+to rtc_getTimeOrDate which {
+  if ('time (H:M:S)' == which) {
+    return ('[data:join]' ('_rtc_twoDigit' (rtc_getComponent 'hour')) ':' ('_rtc_twoDigit' (rtc_getComponent 'minute')) ':' ('_rtc_twoDigit' (rtc_getComponent 'second')))
+  } else {
+    return ('[data:join]' (rtc_getComponent 'year') '-' ('_rtc_twoDigit' (rtc_getComponent 'month')) '-' ('_rtc_twoDigit' (rtc_getComponent 'day')))
+  }
+}
+
+to rtc_initModule name {
+  rtc_i2cAddr = 0
+  if (name == '') {
+    '_rtc_init'
+  } (name == 'DS1307') {
+    rtc_i2cAddr = (hexToInt '68')
+    rtc_module = 'DS1307'
+    rtc_registerMap = ('[data:join]' '' '0123456')
+  } (name == 'DS3231') {
+    rtc_i2cAddr = (hexToInt '68')
+    rtc_module = 'DS3231'
+    rtc_registerMap = ('[data:join]' '' '0123456')
+  } (name == 'PCF8523') {
+    rtc_i2cAddr = (hexToInt '68')
+    rtc_module = 'PCF8523'
+    rtc_registerMap = 3457689
+  } (name == 'PCF8563') {
+    rtc_i2cAddr = (hexToInt '51')
+    rtc_module = 'PCF8563'
+    rtc_registerMap = 2346578
+  } (name == 'PCF85063') {
+    rtc_i2cAddr = (hexToInt '51')
+    rtc_module = 'PCF85063'
+    rtc_registerMap = '456879A'
+  } (name == 'RV1805') {
+    rtc_i2cAddr = (hexToInt '69')
+    rtc_module = 'RV1805'
+    rtc_registerMap = 1237456
+  } (name == 'SD3031') {
+    rtc_i2cAddr = (hexToInt '32')
+    rtc_module = 'SD3031'
+    rtc_registerMap = ('[data:join]' '' '0123456')
+    '_rtc_set_SD3031_writable' true
+  } else {
+    rtc_i2cAddr = 0
+    rtc_module = ''
+    rtc_registerMap = ''
+    sayIt 'RTC module not found.'
+  }
+}
+
+to rtc_setDate year month day {
+  day = (maximum 1 (minimum day 31))
+  month = (maximum 1 (minimum month 12))
+  year = (maximum 0 (minimum (year - 2000) 99))
+  '_rtc_setReg' 4 ('_rtc_dec2bcd' day)
+  '_rtc_setReg' 5 ('_rtc_dec2bcd' month)
+  '_rtc_setReg' 6 ('_rtc_dec2bcd' year)
+}
+
+to rtc_setDayOfWeek weekdayNum {
+  '_rtc_init'
+  weekdayNum = (maximum 1 (minimum weekdayNum 7))
+  if (0 < ('[data:find]' rtc_module ('[data:makeList]' 'PCF8523' 'PCF8563' 'PCF85063' 'RV1805' 'SD3031'))) {
+    comment 'Clock uses weekday range 0-6.'
+    if (weekdayNum == 7) {
+      weekdayNum = 0
+    }
+  }
+  '_rtc_setReg' 3 ('_rtc_dec2bcd' weekdayNum)
+}
+
+to rtc_setTime hours minutes seconds {
+  '_rtc_init'
+  comment 'Clock is running (bit 7 of seconds = 0).
+Clock is using 24-hour time (bit 6 of hours = 0).'
+  seconds = (maximum 0 (minimum seconds 59))
+  minutes = (maximum 0 (minimum minutes 59))
+  hours = (maximum 0 (minimum hours 23))
+  '_rtc_setReg' 0 ('_rtc_dec2bcd' seconds)
+  '_rtc_setReg' 1 ('_rtc_dec2bcd' minutes)
+  if (rtc_module == 'SD3031') {
+    comment 'SD3031 is using 24-hour time (bit 7 of hours = 1).'
+    '_rtc_setReg' 2 (('_rtc_dec2bcd' hours) | 128)
+  } else {
+    '_rtc_setReg' 2 ('_rtc_dec2bcd' hours)
+  }
+}
+
+
+module IWA Input
+author MicroBlocks
+version 1 2 
+tags temperature humidity 
+description 'Support for AHT20 temperature and relative humidity sensor.
+
+https://files.seeedstudio.com/wiki/Grove-AHT20_I2C_Industrial_Grade_Temperature_and_Humidity_Sensor/AHT20-datasheet-2020-4-16.pdf'
+
+  spec 'r' 'IWA_temperature' 'IWA Temperature (°C)'
+  spec 'r' 'IWA_humidity' 'IWA Humidity (%RH)'
+  space
+  spec 'r' '_IWA_read_data' '_IWA_read_data'
+  spec 'r' '_IWA_exist' '_IWA_exist'
+
+to IWA_humidity {
+  if ('_IWA_exist') {
+    local 'data' ('_IWA_read_data')
+    local 'raw' (((at 2 data) << 12) | (((at 3 data) << 4) | ((at 4 data) >> 4)))
+    return ((100 * raw) >> 20)
+  }
+}
+
+to IWA_temperature {
+  if ('_IWA_exist') {
+    local 'data' ('_IWA_read_data')
+    local 'raw' ((((at 4 data) & 15) << 16) | (((at 5 data) << 8) | (at 6 data)))
+    return (((200 * raw) >> 20) - 50)
+  }
+}
+
+to '_IWA_exist' {
+  if ('[sensors:i2cExists]' 56) {
+    return true
+  } else {
+    sayIt 'IWA not connected!'
+    return false
+  }
+}
+
+to '_IWA_read_data' {
+  local 'data' ('[data:newByteArray]' 6)
+  '[sensors:i2cWrite]' 56 ('[data:makeList]' (hexToInt 'AC') (hexToInt '33') 0)
+  comment 'Wait for sensor reading to complete (see datasheet).'
+  waitMillis 80
+  '[sensors:i2cRead]' 56 data
+  return data
+}
+
+
+module IWB Input
+author 'José García Yeste'
+version 1 0 
+description 'SPL06-001 Air pressure sensor
+Tested on Springbot Demo Kit
+Base on https://github.com/ArtronShop/ArtronShop_SPL06-001/
+'
+variables _spl06_addr _spl06_coefs _spl06_scaleFactor _spl06_baseAltitude _spl06_basePressure 
+
+  spec 'r' 'spl06 connected' 'spl06 connected'
+  spec 'r' 'spl06 air pressure' 'spl06 air pressure (mBar)'
+  spec 'r' 'spl06 temperature (°C)' 'spl06 temperature (°C)'
+  space
+  spec 'r' 'spl06 altitude' 'spl06 altitude (cm)'
+  spec ' ' 'spl06 set current altitude' 'spl06 set current altitude _ meters' 'num' 0
+  space
+  spec ' ' '_spl06 init' '_spl06 init'
+  spec ' ' '_spl06 read coefficients' '_spl06 read coefficients'
+  spec 'r' '_spl06_altitudeMillimeters' '_spl06_altitudeMillimeters'
+  spec 'r' '_spl06_rawPressure' '_spl06_rawPressure'
+  spec 'r' '_spl06 get24bits' '_spl06 get24bits _' 'num' 0
+
+to '_spl06 get24bits' reg {
+  local 'buf' (newList 3)
+  '[sensors:i2cWrite]' _spl06_addr reg
+  '[sensors:i2cRead]' _spl06_addr buf
+  local 'res' ((((at 1 buf) << 16) | ((at 2 buf) << 8)) | (at 3 buf))
+  if (res > (1 << 23)) {
+    res = (res - (1 << 24))
+  }
+  return res
+}
+
+to '_spl06 init' {
+  if (_spl06_addr != 0) {return}
+  _spl06_addr = 119
+  comment 'RESET'
+  i2cSet _spl06_addr (hexToInt 'C') 9
+  waitMillis 50
+  comment ' MODE_BACKGND_BOTH'
+  i2cSet _spl06_addr 8 7
+  local 'spl06_scaleFactors' ('[data:makeList]' 524288 1572864 3670016 7864320 253952 516096 1040384 2088960)
+  comment 'Oversampling 0-7 (5 = 32x)'
+  local 'spl06_oversampling' 5
+  _spl06_scaleFactor = (at (spl06_oversampling + 1) spl06_scaleFactors)
+  i2cSet _spl06_addr 6 ((hexToInt '60') | (spl06_oversampling & 7))
+  i2cSet _spl06_addr 7 ((hexToInt 'B0') | (spl06_oversampling & 7))
+  i2cSet _spl06_addr 9 (ifExpression (spl06_oversampling >= 4) (hexToInt 'C') 8)
+  waitMillis 100
+  '_spl06 read coefficients'
+}
+
+to '_spl06 read coefficients' {
+  local 'buf' (newList 18)
+  _spl06_coefs = (newList 9)
+  '[sensors:i2cWrite]' _spl06_addr (hexToInt '10')
+  '[sensors:i2cRead]' _spl06_addr buf
+  comment 'c0'
+  atPut 1 _spl06_coefs (((at 1 buf) << 4) | ((at 2 buf) >> 4))
+  if ((at 1 _spl06_coefs) > (1 << 11)) {
+    atPut 1 _spl06_coefs ((at 1 _spl06_coefs) - (1 << 12))
+  }
+  comment 'c1'
+  atPut 2 _spl06_coefs ((((at 2 buf) & (hexToInt 'F')) << 8) | (at 3 buf))
+  if ((at 2 _spl06_coefs) > (1 << 11)) {
+    atPut 2 _spl06_coefs ((at 2 _spl06_coefs) - (1 << 12))
+  }
+  comment 'c01, c11, c20, c21, c30'
+  for c ('[data:range]' 3 7) {
+    local 'coef' (((at ((c * 2) + 3) buf) << 8) | (at ((c * 2) + 4) buf))
+    if (coef > (1 << 15)) {
+      coef = (coef - (1 << 16))
+    }
+    atPut c _spl06_coefs coef
+  }
+  comment 'c00, c10'
+  atPut 8 _spl06_coefs ((((at 4 buf) << 12) | ((at 5 buf) << 4)) | ((at 6 buf) >> 4))
+  if ((at 8 _spl06_coefs) > (1 << 19)) {
+    atPut 8 _spl06_coefs ((at 8 _spl06_coefs) - (1 << 20))
+  }
+  atPut 9 _spl06_coefs (((((at 6 buf) & (hexToInt 'F')) << 16) | ((at 7 buf) << 8)) | (at 8 buf))
+  if ((at 9 _spl06_coefs) > (1 << 19)) {
+    atPut 9 _spl06_coefs ((at 9 _spl06_coefs) - (1 << 20))
+  }
+}
+
+to '_spl06_altitudeMillimeters' {
+  if (_spl06_basePressure == 0) {
+    comment 'if base altitude not set, use zero (useful for relative measurments)'
+    'spl06 set current altitude' 0
+  }
+  return ('[misc:pressureToAltitude]' ('_spl06_rawPressure') _spl06_basePressure)
+}
+
+to '_spl06_rawPressure' {
+  '_spl06 init'
+  local 'praw' ('_spl06 get24bits' 0)
+  local 'traw' ('_spl06 get24bits' 3)
+  local 'k' (_spl06_scaleFactor >> 10)
+  local 'f1' ((longMult praw ((at 9 _spl06_coefs) + ((longMult praw ((at 5 _spl06_coefs) + ((longMult praw (at 7 _spl06_coefs) 10) / k)) 10) / k)) 10) / k)
+  local 'f3' ((longMult traw ((longMult praw ((at 4 _spl06_coefs) + ((longMult praw (at 6 _spl06_coefs) 10) / k)) 10) / k) 10) / k)
+  return (sum (at 8 _spl06_coefs) f1 ((longMult traw (at 3 _spl06_coefs) 10) / k) f3)
+}
+
+to 'spl06 air pressure' {
+  return ((('_spl06_rawPressure') + 50) / 100)
+}
+
+to 'spl06 altitude' {
+  return ((('_spl06_altitudeMillimeters') + 5) / -10)
+}
+
+to 'spl06 connected' {
+  '_spl06 init'
+  return (((i2cGet _spl06_addr (hexToInt 'D')) & (hexToInt 'F0')) == 16)
+}
+
+to 'spl06 set current altitude' baseMeters {
+  '_spl06 init'
+  local 'total' 0
+  repeat 20 {
+    total += ('_spl06_rawPressure')
+    waitMillis 1
+  }
+  _spl06_basePressure = (total / 20)
+  _spl06_baseAltitude = baseMeters
+}
+
+to 'spl06 temperature (°C)' {
+  '_spl06 init'
+  local 'traw' ('_spl06 get24bits' 3)
+  return (((at 1 _spl06_coefs) / 2) + ((traw * (at 2 _spl06_coefs)) / _spl06_scaleFactor))
+}
+
+
+module 'LED Display' Output
+author MicroBlocks
+version 1 15 
+choices led_imageMenu heart 'small heart' yes no happy sad confused angry asleep surprised silly fabulous meh 't-shirt' 'roller skate' duck house tortoise butterfly 'stick figure' ghost sword giraffe skull umbrella snake rabbit cow 'quarter note' 'eight note' pitchfork target triangle 'left triangle' 'chess board' diamond 'small diamond' square 'small square' scissors 
+description 'Display primitives for the 5x5 LED display on the BBC micro:bit, Calliope mini and M5Atom Matrix. Boards with TFT displays (such as the Citilab ED1 or the M5Stack family) support these primitives with a simulated "fat pixel" display.
+'
+variables _stop_scrolling_text 
+
+  spec ' ' '[display:mbDisplay]' 'display _' 'microbitDisplay' 15237440
+  spec ' ' 'led_displayImage' 'display image _ : x _ y _' 'menu.led_imageMenu num num' 'happy' 1 1
+  spec ' ' '[display:mbDisplayOff]' 'clear display'
+  space
+  spec ' ' '[display:mbPlot]' 'plot x _ y _' 'num num' 3 3
+  spec ' ' '[display:mbUnplot]' 'unplot x _ y _' 'num num' 3 3
+  space
+  spec ' ' 'displayCharacter' 'display character _' 'str' 'A'
+  spec ' ' 'scroll_text' 'scroll text _ : pausing _ ms' 'str num' 'HELLO ROSA!' 100
+  spec ' ' 'stopScrollingText' 'stop scrolling'
+  advanced
+  spec ' ' 'set display color' 'set display color _' 'color'
+  spec 'r' 'led_image' 'LED image #BR# _' 'microbitDisplay' 15237440
+  space
+  spec 'r' '_led_namedImage' '_led_namedImage _' 'menu.led_imageMenu' 'happy'
+  spec 'r' '_led_imageData' '_led_imageData'
+
+to '_led_imageData' {
+  return 'heart:4685802,small heart:145728,yes:2269696,no:18157905,happy:15237440,sad:18284864,confused:22348096,angry:23036241,asleep:459616,surprised:4526090,silly:25984017,fabulous:15008639,meh:2236443,t-shirt:15154043,roller skate:11534104,duck:489702,house:10976708,tortoise:359872,butterfly:29332475,stick figure:18158564,ghost:23068334,sword:4657284,giraffe:10946627,skull:15171246,umbrella:6460398,snake:469859,rabbit:16104613,cow:4685361,quarter note:7573636,eight note:7590276,pitchfork:4357813,target:4681156,triangle:1026176,left triangle:32805985,chess board:11184810,diamond:4539716,small diamond:141440,square:33080895,small square:469440,scissors:20287859,'
+}
+
+to '_led_namedImage' name {
+  local 'data' ('_led_imageData')
+  local 'i' ('[data:find]' name data)
+  if (i == -1) {
+    comment 'Name not found'
+    return 0
+  }
+  local 'start' (('[data:find]' ':' data i) + 1)
+  local 'end' (('[data:find]' ',' data i) - 1)
+  return ('[data:convertType]' ('[data:copyFromTo]' data start end) 'number')
+}
+
+to displayCharacter s {
+  s = ('[data:join]' '' s)
+  if ((size s) == 0) {
+    '[display:mbDisplayOff]'
+    return 0
+  }
+  '[display:mbDrawShape]' ('[display:mbShapeForLetter]' (at 1 s)) 1 1
+}
+
+to led_displayImage imageName optionalX optionalY {
+  local 'image' imageName
+  if (isType image 'string') {
+    image = ('_led_namedImage' imageName)
+  }
+  '[display:mbDrawShape]' image (argOrDefault 2 1) (argOrDefault 3 1)
+}
+
+to led_image twentyFiveBitInt {
+  comment 'An LED image is a 25-bit integer'
+  return twentyFiveBitInt
+}
+
+to scroll_text text optionalDelay {
+  text = ('[data:join]' '' text)
+  local 'delay' 100
+  if ((pushArgCount) > 1) {
+    delay = optionalDelay
+  }
+  _stop_scrolling_text = (booleanConstant false)
+  if ('Pico:ed' == (boardType)) {
+    for position (((size text) * 6) + 18) {
+      if _stop_scrolling_text {return 0}
+      '[display:mbDisplayOff]'
+      '[tft:text]' text (17 - position) 0 (colorSwatch 125 125 125 255) 1 true
+      waitMillis (delay / 2)
+    }
+  } (or ('KidsIOT' == (boardType)) ('CodingBox' == (boardType))) {
+    for position (((size text) * 6) + 21) {
+      if _stop_scrolling_text {return 0}
+      '[tft:deferUpdates]'
+      '[tft:clear]'
+      '[tft:text]' text (128 - (6 * position)) 6 (colorSwatch 255 255 255 255) 6 false
+      '[tft:resumeUpdates]'
+      waitMillis (delay / 8)
+    }
+  } else {
+    for position (((size text) * 6) + 6) {
+      if _stop_scrolling_text {return 0}
+      for i (size text) {
+        '[display:mbDrawShape]' ('[display:mbShapeForLetter]' ('[data:unicodeAt]' i text)) (((i * 6) + 2) - position) 1
+      }
+      waitMillis delay
+    }
+  }
+}
+
+to 'set display color' color {
+  '[display:mbSetColor]' color
+}
+
+to stopScrollingText {
+  _stop_scrolling_text = (booleanConstant true)
+  waitMillis 10
+  '[display:mbDisplayOff]'
+}
+
+
+module SDCard Data
+author MicroBlocks
+version 1 6 
+description 'SDCard file system operations. Similar to the File library, but for SD Cards.
+The chip select pin defaults to the correct pin on most boards (i.e. the Arduino SS pin).
+'
+
+  spec ' ' '[sd:open]' 'open sd file _' 'str'
+  spec ' ' '[sd:close]' 'close sd file _' 'str'
+  spec ' ' '[sd:delete]' 'delete sd file _' 'str'
+  space
+  spec ' ' '[sd:appendLine]' 'append line _ to sd file _' 'str str'
+  spec ' ' '[sd:appendBytes]' 'append bytes _ to sd file _' 'str str'
+  space
+  spec 'r' '[sd:fileExists]' 'sd file exists _' 'str'
+  spec 'r' '[sd:fileSize]' 'size of sd file _' 'str'
+  spec 'r' 'sdCard_fileContents' 'contents of sd file _ : binary _' 'str bool' '' false
+  space
+  spec 'r' '[sd:readLine]' 'next line of sd file _' 'str'
+  spec 'r' '[sd:readBytes]' 'next _ bytes of sd file _ : starting at _' 'num str num' 100 '' 0
+  spec 'r' '[sd:readInto]' 'read into _ from sd file _' 'str str' 'a ByteArray' ''
+  spec 'r' '[sd:endOfFile]' 'end of sd file _' 'str'
+  space
+  spec 'r' '[sd:readPosition]' 'read position of sd file _' 'str'
+  spec ' ' '[sd:setReadPosition]' 'set read position _ of sd file _' 'num str' 0 ''
+  spec ' ' 'sdCard_skipBytes' 'skip _ bytes of sd file _' 'num str' 4 ''
+  space
+  spec 'r' '[sd:hasCard]' 'sd has card'
+  spec 'r' 'sdCard_fileNames' 'sd file names : in directory _' 'str' '/'
+  spec 'r' 'sdCard_folderNames' 'sd folder names : in directory _' 'str' '/'
+  space
+  spec ' ' '[sd:createFolder]' 'create folder _' 'str'
+  spec ' ' 'sdCard_deleteFolder' 'delete folder _ : and contents _' 'str bool' '' false
+  advanced
+  spec ' ' '[sd:init]' 'set SD card chip select pin _' 'num' -1
+  spec ' ' '[sd:setSPIPins]' 'set SD card SPI clk _ mosi _ miso _  chip select _ : #BR# use secondary SPI _ is dedicated _' 'num num num num bool bool' 14 12 13 -1 false false
+
+to sdCard_deleteFolder folderName optionalDeleteContents {
+  local 'deleteContents' (argOrDefault 2 false)
+  if (or (folderName == '') ((at 1 folderName) != '/')) {
+    folderName = ('[data:join]' '/' folderName)
+  }
+  if deleteContents {
+    for file (sdCard_fileNames folderName) {
+      '[sd:delete]' ('[data:join]' folderName '/' file)
+    }
+    for subfolder (sdCard_folderNames folderName) {
+      sdCard_deleteFolder ('[data:join]' folderName '/' subfolder) true
+    }
+  }
+  '[sd:deleteFolder]' folderName
+}
+
+to sdCard_fileContents fileName optionBinary {
+  local 'binary' (argOrDefault 2 (booleanConstant false))
+  local 'byteCount' ('[sd:fileSize]' fileName)
+  local 'result' ('[data:newByteArray]' byteCount)
+  local 'i' 1
+  '[sd:open]' fileName
+  repeatUntil (i > byteCount) {
+    i += ('[sd:readInto]' result fileName)
+  }
+  '[sd:close]' fileName
+  return (ifExpression binary result ('[data:convertType]' result 'string'))
+}
+
+to sdCard_fileNames dir {
+  '[sd:startList]' dir
+  local 'result' ('[data:makeList]')
+  local 'fileName' ('[sd:nextInList]')
+  repeatUntil (fileName == '') {
+    '[data:addLast]' fileName result
+    fileName = ('[sd:nextInList]')
+  }
+  return result
+}
+
+to sdCard_folderNames dir {
+  '[sd:startList]' dir
+  local 'result' ('[data:makeList]')
+  local 'folderName' ('[sd:nextInList]' (booleanConstant true))
+  repeatUntil (folderName == '') {
+    '[data:addLast]' folderName result
+    folderName = ('[sd:nextInList]' (booleanConstant true))
+  }
+  return result
+}
+
+to sdCard_skipBytes offset file {
+  local 'newPosition' (('[sd:readPosition]' file) + offset)
+  '[sd:setReadPosition]' newPosition file
+}
+
+
+module Springbot
+author MicroBlocks
+version 1 0 
+tags tilt acceleration light temperature 
+description '
+Blocks for the Springbot including sensors and NeoPixel.'
+variables _springbot_LED_color 
+
+  spec ' ' 'springbot_setColorLED' 'set color LED to _' 'color'
+  spec ' ' 'springbot_clearColorLED' 'clear color LED'
+  spec ' ' 'springbot_brightenBy' 'brighten color LED by _' 'num' 10
+  space
+  spec 'r' 'springbot_colorSwatch' '_' 'color'
+  spec 'r' 'springbot_colorFromRGB' 'color r _ g _ b _ (0-255)' 'num num num' 100 0 0
+  spec 'r' 'springbot_randomColor' 'random color'
+  space
+  spec 'r' '[sensors:tiltX]' 'tilt x'
+  spec 'r' '[sensors:tiltY]' 'tilt y'
+  spec 'r' '[sensors:tiltZ]' 'tilt z'
+  spec 'r' '[sensors:acceleration]' 'acceleration'
+  space
+  spec 'r' '[display:lightLevel]' 'light level'
+  spec 'r' '[sensors:temperature]' 'temperature (°C)'
+
+to springbot_brightenBy delta {
+  if (_springbot_LED_color != 0) {
+    local 'h' ('[misc:hue]' _springbot_LED_color)
+    local 's' ('[misc:saturation]' _springbot_LED_color)
+    local 'v' (('[misc:brightness]' _springbot_LED_color) + delta)
+    v = (maximum 20 (minimum v 100))
+    springbot_setColorLED ('[misc:hsvColor]' h s v)
+  }
+}
+
+to springbot_clearColorLED {
+  springbot_setColorLED 0
+}
+
+to springbot_colorFromRGB r g b {
+  r = (maximum 0 (minimum r 255))
+  g = (maximum 0 (minimum g 255))
+  b = (maximum 0 (minimum b 255))
+  return (((r << 16) | (g << 8)) | b)
+}
+
+to springbot_colorSwatch color {
+  return color
+}
+
+to springbot_randomColor {
+  local 'n1' (random 100 200)
+  local 'n2' (random 0 100)
+  if (1 == (random 1 3)) {
+    return ((n1 << 16) | (n2 << 8))
+  } (1 == (random 1 2)) {
+    return ((n2 << 16) | n1)
+  } else {
+    return ((n1 << 8) | n2)
+  }
+}
+
+to springbot_setColorLED color {
+  _springbot_LED_color = color
+  '[display:neoPixelSetPin]' -1 false
+  '[display:neoPixelSend]' _springbot_LED_color
+  waitMicros 300
+}
+
