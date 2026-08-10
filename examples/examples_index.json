@@ -12,6 +12,18 @@
     "files": []
   },
   {
+    "file": "HappyOctaves/HappyOctaves.ubp",
+    "download": "HappyOctaves/HappyOctaves.ubp",
+    "example_name": "HappyOctaves",
+    "author": "Oliver Gotfredsen",
+    "version": "1.0",
+    "description": "Using the A and B buttons, increase/decrease the octaves of the \"happy birthday\" song while it plays.",
+    "codeimage": "HappyOctaves/HappyOctaves.png",
+    "storyimage": "",
+    "url": "",
+    "files": []
+  },
+  {
     "file": "OctoStudio/OctoStudio.ubp",
     "download": "OctoStudio/OctoStudio.ubp",
     "example_name": "OctoStudio",
@@ -48,6 +60,21 @@
     "storyimage": "",
     "url": "",
     "files": []
+  },
+  {
+    "file": "PlayTune/PlayTune.ubp",
+    "download": "PlayTune/PlayTune.ubp",
+    "example_name": "PlayTune",
+    "author": "Bjarke Gotfredsen",
+    "version": "1.0",
+    "description": "Plays one of two files stored on the device. In Microblocks Gear menu - check Advanced. The in the file menu, use Put a file, and upload the two files",
+    "codeimage": "PlayTune/PlayTune.png",
+    "storyimage": "",
+    "url": "",
+    "files": [
+      "PlayTune/HappyBirthdayToYou.csv",
+      "PlayTune/Nkosi_Sikelel_iAfrica.csv"
+    ]
   },
   {
     "file": "Temp RH AtmP OLED/Temp_RelH_AtmP_OLED.ubp",

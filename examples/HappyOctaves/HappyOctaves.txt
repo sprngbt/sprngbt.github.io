@@ -1,0 +1,8 @@
+module main
+author Oliver Gotfredsen
+version 1.0
+description 'Using the A and B buttons, increase/decrease the octaves of the "happy birthday" song while it plays.'
+codeimage HappyOctaves.png
+storyimage
+url
+files

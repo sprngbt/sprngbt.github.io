@@ -1,0 +1,669 @@
+module main
+author unknown
+version 1 0 
+description ''
+variables Octaves Octaves2 
+
+  spec ' ' 'happybirthday' 'happybirthday'
+
+to happybirthday {
+  local 'eigth' 200
+  local 'quarter' (2 * eigth)
+  local 'half' (2 * quarter)
+  comment 'happy birthday part 1'
+  'play tone' 'D' Octaves eigth
+  'play tone' 'D' Octaves eigth
+  'play tone' 'E' Octaves quarter
+  'play tone' 'D' Octaves quarter
+  'play tone' 'G' Octaves quarter
+  'play tone' 'F#' Octaves half
+  comment 'happy birthday part 2'
+  'play tone' 'D' Octaves eigth
+  'play tone' 'D' Octaves eigth
+  'play tone' 'E' Octaves quarter
+  'play tone' 'D' Octaves quarter
+  'play tone' 'A' Octaves quarter
+  'play tone' 'G' Octaves half
+  comment 'happy birthday part 3'
+  'play tone' 'D' Octaves eigth
+  'play tone' 'D' Octaves eigth
+  'play tone' 'D' Octaves quarter
+  'play tone' 'B' Octaves quarter
+  'play tone' 'G' Octaves quarter
+  'play tone' 'F#' Octaves quarter
+  'play tone' 'E' Octaves quarter
+  comment 'happy birthday part 4'
+  'play tone' 'C' Octaves2 eigth
+  'play tone' 'C' Octaves2 eigth
+  'play tone' 'B' Octaves quarter
+  'play tone' 'G' Octaves quarter
+  'play tone' 'A' Octaves quarter
+  'play tone' 'G' Octaves half
+}
+
+script 764 40 {
+to happybirthday {}
+}
+
+script 45 60 {
+whenButtonPressed 'A+B'
+comment 'Resets the "Octaves" variable back to their original values '
+Octaves = 1
+Octaves2 = 2
+sendBroadcast 'show message'
+happybirthday
+}
+
+script 48 254 {
+whenButtonPressed 'A'
+comment 'Increases the Octaves 
+variable with each press'
+Octaves = (Octaves + 1)
+Octaves2 = (Octaves2 + 1)
+}
+
+script 447 262 {
+whenButtonPressed 'B'
+comment 'Decreases the Octaves 
+variable with each press'
+Octaves = (Octaves - 1)
+Octaves2 = (Octaves2 - 1)
+}
+
+script 42 493 {
+whenBroadcastReceived 'show message'
+'tft:text' 'Happy ' 5 5 false
+'tft:text' 'Octaves!' 5 20 false
+waitMillis 10000
+'[tft:clear]'
+}
+
+
+module 'LED Display' Output
+author MicroBlocks
+version 1 15 
+choices led_imageMenu heart 'small heart' yes no happy sad confused angry asleep surprised silly fabulous meh 't-shirt' 'roller skate' duck house tortoise butterfly 'stick figure' ghost sword giraffe skull umbrella snake rabbit cow 'quarter note' 'eight note' pitchfork target triangle 'left triangle' 'chess board' diamond 'small diamond' square 'small square' scissors 
+description 'Display primitives for the 5x5 LED display on the BBC micro:bit, Calliope mini and M5Atom Matrix. Boards with TFT displays (such as the Citilab ED1 or the M5Stack family) support these primitives with a simulated "fat pixel" display.
+'
+variables _stop_scrolling_text 
+
+  spec ' ' '[display:mbDisplay]' 'display _' 'microbitDisplay' 15237440
+  spec ' ' 'led_displayImage' 'display image _ : x _ y _' 'menu.led_imageMenu num num' 'happy' 1 1
+  spec ' ' '[display:mbDisplayOff]' 'clear display'
+  space
+  spec ' ' '[display:mbPlot]' 'plot x _ y _' 'num num' 3 3
+  spec ' ' '[display:mbUnplot]' 'unplot x _ y _' 'num num' 3 3
+  space
+  spec ' ' 'displayCharacter' 'display character _' 'str' 'A'
+  spec ' ' 'scroll_text' 'scroll text _ : pausing _ ms' 'str num' 'HELLO ROSA!' 100
+  spec ' ' 'stopScrollingText' 'stop scrolling'
+  advanced
+  spec ' ' 'set display color' 'set display color _' 'color'
+  spec 'r' 'led_image' 'LED image #BR# _' 'microbitDisplay' 15237440
+  space
+  spec 'r' '_led_namedImage' '_led_namedImage _' 'menu.led_imageMenu' 'happy'
+  spec 'r' '_led_imageData' '_led_imageData'
+
+to '_led_imageData' {
+  return 'heart:4685802,small heart:145728,yes:2269696,no:18157905,happy:15237440,sad:18284864,confused:22348096,angry:23036241,asleep:459616,surprised:4526090,silly:25984017,fabulous:15008639,meh:2236443,t-shirt:15154043,roller skate:11534104,duck:489702,house:10976708,tortoise:359872,butterfly:29332475,stick figure:18158564,ghost:23068334,sword:4657284,giraffe:10946627,skull:15171246,umbrella:6460398,snake:469859,rabbit:16104613,cow:4685361,quarter note:7573636,eight note:7590276,pitchfork:4357813,target:4681156,triangle:1026176,left triangle:32805985,chess board:11184810,diamond:4539716,small diamond:141440,square:33080895,small square:469440,scissors:20287859,'
+}
+
+to '_led_namedImage' name {
+  local 'data' ('_led_imageData')
+  local 'i' ('[data:find]' name data)
+  if (i == -1) {
+    comment 'Name not found'
+    return 0
+  }
+  local 'start' (('[data:find]' ':' data i) + 1)
+  local 'end' (('[data:find]' ',' data i) - 1)
+  return ('[data:convertType]' ('[data:copyFromTo]' data start end) 'number')
+}
+
+to displayCharacter s {
+  s = ('[data:join]' '' s)
+  if ((size s) == 0) {
+    '[display:mbDisplayOff]'
+    return 0
+  }
+  '[display:mbDrawShape]' ('[display:mbShapeForLetter]' (at 1 s)) 1 1
+}
+
+to led_displayImage imageName optionalX optionalY {
+  local 'image' imageName
+  if (isType image 'string') {
+    image = ('_led_namedImage' imageName)
+  }
+  '[display:mbDrawShape]' image (argOrDefault 2 1) (argOrDefault 3 1)
+}
+
+to led_image twentyFiveBitInt {
+  comment 'An LED image is a 25-bit integer'
+  return twentyFiveBitInt
+}
+
+to scroll_text text optionalDelay {
+  text = ('[data:join]' '' text)
+  local 'delay' 100
+  if ((pushArgCount) > 1) {
+    delay = optionalDelay
+  }
+  _stop_scrolling_text = (booleanConstant false)
+  if ('Pico:ed' == (boardType)) {
+    for position (((size text) * 6) + 18) {
+      if _stop_scrolling_text {return 0}
+      '[display:mbDisplayOff]'
+      '[tft:text]' text (17 - position) 0 (colorSwatch 125 125 125 255) 1 true
+      waitMillis (delay / 2)
+    }
+  } (or ('KidsIOT' == (boardType)) ('CodingBox' == (boardType))) {
+    for position (((size text) * 6) + 21) {
+      if _stop_scrolling_text {return 0}
+      '[tft:deferUpdates]'
+      '[tft:clear]'
+      '[tft:text]' text (128 - (6 * position)) 6 (colorSwatch 255 255 255 255) 6 false
+      '[tft:resumeUpdates]'
+      waitMillis (delay / 8)
+    }
+  } else {
+    for position (((size text) * 6) + 6) {
+      if _stop_scrolling_text {return 0}
+      for i (size text) {
+        '[display:mbDrawShape]' ('[display:mbShapeForLetter]' ('[data:unicodeAt]' i text)) (((i * 6) + 2) - position) 1
+      }
+      waitMillis delay
+    }
+  }
+}
+
+to 'set display color' color {
+  '[display:mbSetColor]' color
+}
+
+to stopScrollingText {
+  _stop_scrolling_text = (booleanConstant true)
+  waitMillis 10
+  '[display:mbDisplayOff]'
+}
+
+
+module SDCard Data
+author MicroBlocks
+version 1 6 
+description 'SDCard file system operations. Similar to the File library, but for SD Cards.
+The chip select pin defaults to the correct pin on most boards (i.e. the Arduino SS pin).
+'
+
+  spec ' ' '[sd:open]' 'open sd file _' 'str'
+  spec ' ' '[sd:close]' 'close sd file _' 'str'
+  spec ' ' '[sd:delete]' 'delete sd file _' 'str'
+  space
+  spec ' ' '[sd:appendLine]' 'append line _ to sd file _' 'str str'
+  spec ' ' '[sd:appendBytes]' 'append bytes _ to sd file _' 'str str'
+  space
+  spec 'r' '[sd:fileExists]' 'sd file exists _' 'str'
+  spec 'r' '[sd:fileSize]' 'size of sd file _' 'str'
+  spec 'r' 'sdCard_fileContents' 'contents of sd file _ : binary _' 'str bool' '' false
+  space
+  spec 'r' '[sd:readLine]' 'next line of sd file _' 'str'
+  spec 'r' '[sd:readBytes]' 'next _ bytes of sd file _ : starting at _' 'num str num' 100 '' 0
+  spec 'r' '[sd:readInto]' 'read into _ from sd file _' 'str str' 'a ByteArray' ''
+  spec 'r' '[sd:endOfFile]' 'end of sd file _' 'str'
+  space
+  spec 'r' '[sd:readPosition]' 'read position of sd file _' 'str'
+  spec ' ' '[sd:setReadPosition]' 'set read position _ of sd file _' 'num str' 0 ''
+  spec ' ' 'sdCard_skipBytes' 'skip _ bytes of sd file _' 'num str' 4 ''
+  space
+  spec 'r' '[sd:hasCard]' 'sd has card'
+  spec 'r' 'sdCard_fileNames' 'sd file names : in directory _' 'str' '/'
+  spec 'r' 'sdCard_folderNames' 'sd folder names : in directory _' 'str' '/'
+  space
+  spec ' ' '[sd:createFolder]' 'create folder _' 'str'
+  spec ' ' 'sdCard_deleteFolder' 'delete folder _ : and contents _' 'str bool' '' false
+  advanced
+  spec ' ' '[sd:init]' 'set SD card chip select pin _' 'num' -1
+  spec ' ' '[sd:setSPIPins]' 'set SD card SPI clk _ mosi _ miso _  chip select _ : #BR# use secondary SPI _ is dedicated _' 'num num num num bool bool' 14 12 13 -1 false false
+
+to sdCard_deleteFolder folderName optionalDeleteContents {
+  local 'deleteContents' (argOrDefault 2 false)
+  if (or (folderName == '') ((at 1 folderName) != '/')) {
+    folderName = ('[data:join]' '/' folderName)
+  }
+  if deleteContents {
+    for file (sdCard_fileNames folderName) {
+      '[sd:delete]' ('[data:join]' folderName '/' file)
+    }
+    for subfolder (sdCard_folderNames folderName) {
+      sdCard_deleteFolder ('[data:join]' folderName '/' subfolder) true
+    }
+  }
+  '[sd:deleteFolder]' folderName
+}
+
+to sdCard_fileContents fileName optionBinary {
+  local 'binary' (argOrDefault 2 (booleanConstant false))
+  local 'byteCount' ('[sd:fileSize]' fileName)
+  local 'result' ('[data:newByteArray]' byteCount)
+  local 'i' 1
+  '[sd:open]' fileName
+  repeatUntil (i > byteCount) {
+    i += ('[sd:readInto]' result fileName)
+  }
+  '[sd:close]' fileName
+  return (ifExpression binary result ('[data:convertType]' result 'string'))
+}
+
+to sdCard_fileNames dir {
+  '[sd:startList]' dir
+  local 'result' ('[data:makeList]')
+  local 'fileName' ('[sd:nextInList]')
+  repeatUntil (fileName == '') {
+    '[data:addLast]' fileName result
+    fileName = ('[sd:nextInList]')
+  }
+  return result
+}
+
+to sdCard_folderNames dir {
+  '[sd:startList]' dir
+  local 'result' ('[data:makeList]')
+  local 'folderName' ('[sd:nextInList]' (booleanConstant true))
+  repeatUntil (folderName == '') {
+    '[data:addLast]' folderName result
+    folderName = ('[sd:nextInList]' (booleanConstant true))
+  }
+  return result
+}
+
+to sdCard_skipBytes offset file {
+  local 'newPosition' (('[sd:readPosition]' file) + offset)
+  '[sd:setReadPosition]' newPosition file
+}
+
+
+module Springbot
+author MicroBlocks
+version 1 0 
+tags tilt acceleration light temperature 
+description '
+Blocks for the Springbot including sensors and NeoPixel.'
+variables _springbot_LED_color 
+
+  spec ' ' 'springbot_setColorLED' 'set color LED to _' 'color'
+  spec ' ' 'springbot_clearColorLED' 'clear color LED'
+  spec ' ' 'springbot_brightenBy' 'brighten color LED by _' 'num' 10
+  space
+  spec 'r' 'springbot_colorSwatch' '_' 'color'
+  spec 'r' 'springbot_colorFromRGB' 'color r _ g _ b _ (0-255)' 'num num num' 100 0 0
+  spec 'r' 'springbot_randomColor' 'random color'
+  space
+  spec 'r' '[sensors:tiltX]' 'tilt x'
+  spec 'r' '[sensors:tiltY]' 'tilt y'
+  spec 'r' '[sensors:tiltZ]' 'tilt z'
+  spec 'r' '[sensors:acceleration]' 'acceleration'
+  space
+  spec 'r' '[display:lightLevel]' 'light level'
+  spec 'r' '[sensors:temperature]' 'temperature (°C)'
+
+to springbot_brightenBy delta {
+  if (_springbot_LED_color != 0) {
+    local 'h' ('[misc:hue]' _springbot_LED_color)
+    local 's' ('[misc:saturation]' _springbot_LED_color)
+    local 'v' (('[misc:brightness]' _springbot_LED_color) + delta)
+    v = (maximum 20 (minimum v 100))
+    springbot_setColorLED ('[misc:hsvColor]' h s v)
+  }
+}
+
+to springbot_clearColorLED {
+  springbot_setColorLED 0
+}
+
+to springbot_colorFromRGB r g b {
+  r = (maximum 0 (minimum r 255))
+  g = (maximum 0 (minimum g 255))
+  b = (maximum 0 (minimum b 255))
+  return (((r << 16) | (g << 8)) | b)
+}
+
+to springbot_colorSwatch color {
+  return color
+}
+
+to springbot_randomColor {
+  local 'n1' (random 100 200)
+  local 'n2' (random 0 100)
+  if (1 == (random 1 3)) {
+    return ((n1 << 16) | (n2 << 8))
+  } (1 == (random 1 2)) {
+    return ((n2 << 16) | n1)
+  } else {
+    return ((n1 << 8) | n2)
+  }
+}
+
+to springbot_setColorLED color {
+  _springbot_LED_color = color
+  '[display:neoPixelSetPin]' -1 false
+  '[display:neoPixelSend]' _springbot_LED_color
+  waitMicros 300
+}
+
+
+module 'Springbot Display' Output
+author 'bjarke@gotfredsen.com'
+version 1 0 
+depends Springbot 
+description 'Draw monochrome graphics and write text on boards with a TFT/OLED display'
+
+  spec ' ' '[tft:clear]' 'clear display'
+  space
+  spec ' ' 'tft:rect' 'draw rectangle at x _ y _ width _ height _ inverted _ : filled _' 'num num num num bool bool' 10 10 40 30 false true
+  spec ' ' 'tft:roundedRect' 'draw rounded rectangle at x _ y _ width _ height _ radius _ inverted _ : filled _' 'num num num num num bool bool' 10 10 40 30 8 false true
+  spec ' ' 'tft:circle' 'draw circle at x _ y _ radius _ inverted _ : filled _' 'num num num bool bool' 40 40 30 false true
+  spec ' ' 'tft:triangle' 'draw triangle at x _ y _ , x _ y _ , x _ y _ inverted _ : filled _' 'num num num num num num bool bool' 20 20 30 80 60 5 false true
+  spec ' ' 'tft:line' 'draw line from x _ y _ to x _ y _ inverted _' 'num num num num bool' 12 8 25 15 false
+  spec ' ' 'tft_drawVector' 'draw vector x _ y _ angle _ length _ inverted _' 'num num num num bool' 40 40 45 40 false
+  space
+  spec ' ' 'tft:text' 'write _ at x _ y _ inverted _ : scale _ wrap _ : bg inverted _' 'str num num bool num bool bool' 'Hello World!' 5 5 false 2 true true
+  spec ' ' 'tft_drawText' 'draw text _ at x _ y _ inverted _ : scale _ : bg inverted _' 'str num num bool num bool' 'Line 1
+Line 2' 50 20 false 2 true
+  space
+  spec ' ' 'tft:setPixel' 'set pixel x _ y _ to inverted _' 'num num bool' 10 10 false
+  spec ' ' '[tft:pixelRow]' 'draw pixel row _ x _ y _ : bytesPerPixel _ : palette _' 'auto num num num str' 'aList' 0 0 4
+  spec ' ' '[tft:drawBitmap]' 'draw bitmap _ palette _ at x _ y _' 'str str num num' 'aBitmap' 'a list of colors' 10 10
+  space
+  spec 'r' 'black' 'black'
+  spec 'r' 'white' 'white'
+  space
+  spec 'r' '[tft:getWidth]' 'display width'
+  spec 'r' '[tft:getHeight]' 'display height'
+  space
+  spec ' ' '[tft:setBacklight]' 'set display backlight _ (0-10)' 'num' 10
+  space
+  spec ' ' '_deferMonochromeDisplayUpdates' '_defer monochrome display updates'
+  spec ' ' '_resumeMonochromeDisplayUpdates' '_resume monochrome display updates'
+
+to '_deferMonochromeDisplayUpdates' {
+  '[tft:deferUpdates]'
+}
+
+to '_resumeMonochromeDisplayUpdates' {
+  '[tft:resumeUpdates]'
+}
+
+to black {
+  return 0
+}
+
+to 'tft:circle' x y radius inverted filled {
+  '[tft:circle]' x y radius (tft__bwColor inverted) filled
+}
+
+to 'tft:line' x1 y1 x2 y2 inverted {
+  '[tft:line]' x1 y1 x2 y2 (tft__bwColor inverted)
+}
+
+to 'tft:rect' x y w h inverted filled {
+  '[tft:rect]' x y w h (tft__bwColor inverted) filled
+}
+
+to 'tft:roundedRect' x y w h radius inverted filled {
+  '[tft:roundedRect]' x y w h radius (tft__bwColor inverted) filled
+}
+
+to 'tft:setPixel' x y inverted {
+  '[tft:setPixel]' x y (tft__bwColor inverted)
+}
+
+to 'tft:text' s x y inverted optionalScale wrap optionalBGInverted {
+  s = ('[data:convertType]' s 'string')
+  local 'scale' (argOrDefault 5 2)
+  local 'bgInverted' (argOrDefault 7 true)
+  local 'fg' (tft__bwColor inverted)
+  local 'bg' (tft__bwColor bgInverted)
+  '[tft:text]' s x y fg scale wrap bg
+}
+
+to 'tft:triangle' x1 y1 x2 y2 x3 y3 inverted filled {
+  '[tft:triangle]' x1 y1 x2 y2 x3 y3 (tft__bwColor inverted) filled
+}
+
+to tft__bwColor inverted {
+  if inverted {
+    return (black)
+  } else {
+    return (white)
+  }
+}
+
+to tft_drawText s x y inverted optionalScale optionalBGInverted {
+  s = ('[data:convertType]' s 'string')
+  local 'scale' (argOrDefault 5 2)
+  local 'bgInverted' (argOrDefault 6 true)
+  local 'fg' (tft__bwColor inverted)
+  local 'bg' (tft__bwColor bgInverted)
+  for line ('[data:split]' s ('[data:unicodeString]' 10)) {
+    '[tft:text]' line x y fg scale false bg
+    y += (8 * scale)
+  }
+}
+
+to tft_drawVector x y angle length inverted {
+  local 'endX' (x + ((length * ('[misc:sin]' (100 * (angle + 90)))) >> 14))
+  local 'endY' (y + ((length * ('[misc:sin]' (100 * angle))) >> 14))
+  'tft:line' x y endX endY inverted
+}
+
+to white {
+  return 16777215
+}
+
+
+module Tone Output
+author MicroBlocks
+version 1 11 
+tags tone sound music audio note speaker 
+choices tone_NoteName 'nt;c' 'nt;c#' 'nt;d' 'nt;d#' 'nt;e' 'nt;f' 'nt;f#' 'nt;g' 'nt;g#' 'nt;a' 'nt;a#' 'nt;b' 
+description 'Audio tone generation. Make music with MicroBlocks!
+'
+variables _tonePin _toneInitalized _toneLoopOverhead _toneNoteNames _toneArezzoNotes _toneFrequencies 
+
+  spec ' ' 'play tone' 'play note _ octave _ for _ ms' 'str.tone_NoteName num num' 'nt;c' 0 500
+  spec ' ' 'playMIDIKey' 'play midi key _ for _ ms' 'num num' 60 500
+  spec ' ' 'play frequency' 'play frequency _ for _ ms' 'num num' 261 500
+  space
+  spec ' ' 'startTone' 'start tone _ Hz' 'num' 440
+  spec ' ' 'tone_startNote' 'start note _ octave _' 'str.tone_NoteName num' 'nt;c' 0
+  spec ' ' 'tone_startMIDIKey' 'start midi key _' 'num' 60
+  spec ' ' 'stopTone' 'stop tone'
+  space
+  spec ' ' 'attach buzzer to pin' 'attach buzzer to pin _' 'auto' ''
+  space
+  spec 'r' '_measureLoopOverhead' '_measureLoopOverhead'
+  spec 'r' '_baseFreqForNote' '_baseFreqForNote _' 'auto' 'c'
+  spec 'r' '_baseFreqForSemitone' '_baseFreqForSemitone _' 'num' 0
+  spec ' ' '_toneLoop' '_toneLoop _ for _ ms' 'num num' 440000 100
+  spec 'r' '_trimmedLowercase' '_trimmedLowercase _' 'str' 'A. b C...'
+  spec ' ' '_tone init note names' '_tone init note names'
+
+to '_baseFreqForNote' note {
+  comment 'Return the frequency for the given note in the middle-C octave
+scaled by 1000. For example, return 440000 (440Hz) for A.
+Note names may be upper or lower case. Note names
+may be followed by # for a sharp or b for a flat.'
+  local 'normalized note' ('_trimmedLowercase' note)
+  'normalized note' = (ifExpression ((at 1 (v 'normalized note')) == 'n') (v 'normalized note') ('[data:join]' 'nt;' (v 'normalized note')))
+  '_tone init note names'
+  if (('[data:find]' (v 'normalized note') _toneArezzoNotes) > 0) {
+    return ('_baseFreqForSemitone' ('[data:find]' (v 'normalized note') _toneArezzoNotes))
+  } else {
+    return ('_baseFreqForSemitone' ('[data:find]' (v 'normalized note') _toneNoteNames))
+  }
+}
+
+to '_baseFreqForSemitone' semitone {
+  if (_toneFrequencies == 0) {_toneFrequencies = ('[data:makeList]' 261626 277183 293665 311127 329628 349228 369994 391995 415305 440000 466164 493883 246942 277183 277183 311127 311127 349228 329628 369994 369994 415305 415305 466164 466164 523252)}
+  if (and (1 <= semitone) (semitone <= (size _toneFrequencies))) {
+    return (at semitone _toneFrequencies)
+  } else {
+    comment 'Bad note name; return 10 Hz'
+    return 10000
+  }
+}
+
+to '_measureLoopOverhead' {
+  comment 'Measure the loop overhead on this device'
+  local 'halfCycle' 100
+  local 'startT' (microsOp)
+  repeat 100 {
+    digitalWriteOp _tonePin false
+    waitMicros halfCycle
+    digitalWriteOp _tonePin false
+    waitMicros halfCycle
+  }
+  local 'usecs' ((microsOp) - startT)
+  return ((usecs - 20000) / 200)
+}
+
+to '_tone init note names' {
+  if (_toneNoteNames == 0) {
+    _toneNoteNames = ('[data:makeList]' 'nt;c' 'nt;c#' 'nt;d' 'nt;d#' 'nt;e' 'nt;f' 'nt;f#' 'nt;g' 'nt;g#' 'nt;a' 'nt;a#' 'nt;b' 'nt;c_' 'nt;db' 'nt;d_' 'nt;eb' 'nt;e_' 'nt;e#' 'nt;f_' 'nt;gb' 'nt;g_' 'nt;ab' 'nt;a_' 'nt;bb' 'nt;b_' 'nt;b#')
+    _toneArezzoNotes = ('[data:makeList]' 'nt;do' 'nt;do#' 'nt;re' 'nt;re#' 'nt;mi' 'nt;fa' 'nt;fa#' 'nt;sol' 'nt;sol#' 'nt;la' 'nt;la#' 'nt;si' 'nt;do_' 'nt;dob' 'nt;re_' 'nt;reb' 'nt;mi_' 'nt;mi#' 'nt;fa_' 'nt;solb' 'nt;sol_' 'nt;lab' 'nt;la_' 'nt;sib' 'nt;si_' 'nt;si#')
+  }
+}
+
+to '_toneLoop' scaledFreq ms {
+  if (_toneInitalized == 0) {'attach buzzer to pin' ''}
+  if ('[io:hasTone]') {
+    '[io:playTone]' _tonePin (scaledFreq / 1000)
+    waitMillis ms
+    '[io:playTone]' _tonePin 0
+  } else {
+    local 'halfCycle' ((500000000 / scaledFreq) - _toneLoopOverhead)
+    local 'cycles' ((ms * 500) / halfCycle)
+    repeat cycles {
+      digitalWriteOp _tonePin true
+      waitMicros halfCycle
+      digitalWriteOp _tonePin false
+      waitMicros halfCycle
+    }
+  }
+}
+
+to '_trimmedLowercase' s {
+  comment 'Return a copy of the given string without whitespace
+or periods and all lowercase.'
+  local 'result' (newList (size s))
+  '[data:delete]' 'all' result
+  for i (size s) {
+    local 'ch' ('[data:unicodeAt]' i s)
+    if (and (ch > 32) (ch != 46)) {
+      if (and (65 <= ch) (ch <= 90)) {ch = (ch + 32)}
+      '[data:addLast]' ch result
+    }
+  }
+  return ('[data:unicodeString]' result)
+}
+
+to 'attach buzzer to pin' pinNumber {
+  if (pinNumber == '') {
+    comment 'Pin number not specified; use default pin for this device'
+    if ((boardType) == 'Citilab ED1') {
+      _tonePin = 26
+    } ((boardType) == 'M5Stack-Core') {
+      _tonePin = 25
+    } ((boardType) == 'M5StickC') {
+      _tonePin = 26
+    } ((boardType) == 'Calliope') {
+      digitalWriteOp 23 true
+      digitalWriteOp 24 true
+      _tonePin = 25
+    } ((boardType) == 'D1-Mini') {
+      _tonePin = 12
+    } ((boardType) == 'CodingBox') {
+      _tonePin = 32
+    } else {
+      _tonePin = -1
+    }
+  } else {
+    _tonePin = pinNumber
+  }
+  _toneLoopOverhead = ('_measureLoopOverhead')
+  _toneInitalized = (booleanConstant true)
+}
+
+to 'play frequency' freq ms {
+  '_toneLoop' (freq * 1000) ms
+}
+
+to 'play tone' note octave ms {
+  local 'freq' ('_baseFreqForNote' note)
+  if (freq <= 10000) {
+    waitMillis ms
+    return 0
+  }
+  if (octave < 0) {
+    repeat (absoluteValue octave) {
+      freq = (freq / 2)
+    }
+  }
+  repeat octave {
+    freq = (freq * 2)
+  }
+  '_toneLoop' freq ms
+}
+
+to playMIDIKey key ms {
+  local 'freq' ('_baseFreqForSemitone' ((key % 12) + 1))
+  local 'octave' ((key / 12) - 5)
+  if (octave < 0) {
+    repeat (absoluteValue octave) {
+      freq = (freq / 2)
+    }
+  }
+  repeat octave {
+    freq = (freq * 2)
+  }
+  '_toneLoop' freq ms
+}
+
+to startTone freq {
+  if (_toneInitalized == 0) {'attach buzzer to pin' ''}
+  if ('[io:hasTone]') {'[io:playTone]' _tonePin freq}
+}
+
+to stopTone {
+  startTone 0
+}
+
+to tone_startMIDIKey key {
+  local 'freq' ('_baseFreqForSemitone' ((key % 12) + 1))
+  local 'octave' ((key / 12) - 5)
+  if (octave < 0) {
+    repeat (absoluteValue octave) {
+      freq = (freq / 2)
+    }
+  }
+  repeat octave {
+    freq = (freq * 2)
+  }
+  startTone ((freq + 500) / 1000)
+}
+
+to tone_startNote note octave {
+  local 'freq' ('_baseFreqForNote' note)
+  if (freq <= 10000) {
+    return 0
+  }
+  if (octave < 0) {
+    repeat (absoluteValue octave) {
+      freq = (freq / 2)
+    }
+  }
+  repeat octave {
+    freq = (freq * 2)
+  }
+  startTone ((freq + 500) / 1000)
+}
+

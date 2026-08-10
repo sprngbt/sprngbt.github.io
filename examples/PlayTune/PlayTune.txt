@@ -1,0 +1,6 @@
+module main
+author Bjarke Gotfredsen
+version 1 0
+description 'Plays one of two files stored on the device. In Microblocks Gear menu - check Advanced. The in the file menu, use Put a file, and upload the two files'
+codeimage PlayTune.png
+files HappyBirthdayToYou.csv Nkosi_Sikelel_iAfrica.csv
