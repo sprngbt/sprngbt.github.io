@@ -1,0 +1,8 @@
+module main
+author Judi Sandrock
+version 1 0
+description 'Classroom light level check. This example shows if there is sufficient light in a classroom for effective reading and learning. The display shows "yes" if the light level is sufficient, and "no" if it is not.
+codeimage Classroom Light Level Yes or No.png
+storyimage Classroom light.png
+url 
+files 

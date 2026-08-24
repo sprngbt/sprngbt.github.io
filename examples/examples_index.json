@@ -12,6 +12,18 @@
     "files": []
   },
   {
+    "file": "Classroom Light Level Check/Classroom Light Level Yes or No.ubp",
+    "download": "Classroom Light Level Check/Classroom Light Level Yes or No.ubp",
+    "example_name": "Classroom Light Level Yes or No",
+    "author": "Judi Sandrock",
+    "version": "1.0",
+    "description": "Classroom light level check. This example shows if there is sufficient light in a classroom for effective reading and learning. The display shows \"yes\" if the light level is sufficient, and \"no\" if it is not.\ncodeimage Classroom Light Level Yes or No.png\nstoryimage Classroom light.png\nurl \nfiles",
+    "codeimage": "",
+    "storyimage": "",
+    "url": "",
+    "files": []
+  },
+  {
     "file": "ESPnow/ESPnow.ubp",
     "download": "ESPnow/ESPnow.ubp",
     "example_name": "ESPnow",
