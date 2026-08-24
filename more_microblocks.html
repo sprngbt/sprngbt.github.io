@@ -258,7 +258,7 @@
 
     .table-wrap {
       margin-top: 1rem;
-      overflow-x: auto;
+      overflow: visible;
       border-radius: 14px;
       border: 1px solid var(--border);
       background: rgba(2, 6, 23, 0.45);
@@ -267,7 +267,6 @@
     table {
       width: 100%;
       border-collapse: collapse;
-      min-width: 760px;
     }
 
     th, td {
@@ -290,6 +289,16 @@
 
     tr:last-child td {
       border-bottom: none;
+    }
+
+    .platform-option {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.65rem;
+    }
+
+    .platform-option > a {
+      font-weight: 700;
     }
 
     .method {
@@ -342,8 +351,22 @@
 
     .qr-hover {
       position: relative;
-      display: inline-block;
-      cursor: default;
+      display: inline-flex;
+      flex: 0 0 auto;
+      cursor: zoom-in;
+      border-radius: 6px;
+      outline: none;
+    }
+
+    .qr-hover:focus-visible {
+      box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.5);
+    }
+
+    .qr-thumb {
+      display: block;
+      width: 34px;
+      height: 34px;
+      border-radius: 4px;
     }
 
     .qr-popup {
@@ -351,7 +374,7 @@
       top: 50%;
       left: calc(100% + 12px);
       transform: translateY(-50%);
-      width: 180px;
+      width: 220px;
       padding: 0.65rem;
       border-radius: 14px;
       border: 1px solid var(--border);
@@ -449,18 +472,22 @@
             <table>
               <thead>
                 <tr>
-                  <th>From</th>
-                  <th>Link</th>
+                  <th>Platform</th>
                   <th>Connection Method</th>
                 </tr>
               </thead>
               <tbody>
                 <tr>
-                  <td>Browser (Chrome/Edge)</td>
                   <td>
-                    <a href="https://microblocks.fun/run/microblocks.html" target="_blank" rel="noopener noreferrer">
-                      microblocks.fun/run/microblocks.html
-                    </a>
+                    <span class="platform-option">
+                      <a href="https://sprngbt.com/mb_web" target="_blank" rel="noopener noreferrer">Browser</a>
+                      <span class="qr-hover" tabindex="0" aria-label="Show larger Browser QR code">
+                        <img class="qr-thumb" src="sprngbt.com.mb_web.svg" alt="Browser QR code" />
+                        <span class="qr-popup" aria-hidden="true">
+                          <img src="sprngbt.com.mb_web.svg" alt="" />
+                        </span>
+                      </span>
+                    </span>
                   </td>
                   <td>
                     <span class="method">BLE</span>
@@ -468,40 +495,48 @@
                   </td>
                 </tr>
                 <tr>
-                  <td>Mac OS</td>
                   <td>
-                    <a href="https://microblocks.fun/downloads/latest/packages/MicroBlocks.app.zip" target="_blank" rel="noopener noreferrer">
-                      MicroBlocks.app.zip
-                    </a>
-                  </td>
-                  <td>
-                    <span class="method">USB only</span>
-                  </td>
-                </tr>
-                <tr>
-                  <td>Windows</td>
-                  <td>
-                    <a href="https://microblocks.fun/downloads/latest/packages/microBlocks%20setup.exe" target="_blank" rel="noopener noreferrer">
-                      microBlocks setup.exe
-                    </a>
-                  </td>
-                  <td>
-                    <span class="method">USB only</span>
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                    <span class="qr-hover">
-                      iPad (3<sup>rd</sup> party app)
-                      <span class="qr-popup">
-                        <img src="sprngbt.com.ios.svg" alt="QR code for iPad App Store link" />
+                    <span class="platform-option">
+                      <a href="https://sprngbt.com/mb_mac" target="_blank" rel="noopener noreferrer">Mac OS</a>
+                      <span class="qr-hover" tabindex="0" aria-label="Show larger Mac OS QR code">
+                        <img class="qr-thumb" src="sprngbt.com.mb_mac.svg" alt="Mac OS QR code" />
+                        <span class="qr-popup" aria-hidden="true">
+                          <img src="sprngbt.com.mb_mac.svg" alt="" />
+                        </span>
                       </span>
                     </span>
                   </td>
                   <td>
-                    <a href="https://apps.apple.com/app/id6752908157" target="_blank" rel="noopener noreferrer">
-                      App Store
-                    </a>
+                    <span class="method">USB only</span>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <span class="platform-option">
+                      <a href="https://sprngbt.com/mb_win" target="_blank" rel="noopener noreferrer">Windows</a>
+                      <span class="qr-hover" tabindex="0" aria-label="Show larger Windows QR code">
+                        <img class="qr-thumb" src="sprngbt.com.mb_win.svg" alt="Windows QR code" />
+                        <span class="qr-popup" aria-hidden="true">
+                          <img src="sprngbt.com.mb_win.svg" alt="" />
+                        </span>
+                      </span>
+                    </span>
+                  </td>
+                  <td>
+                    <span class="method">USB only</span>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <span class="platform-option">
+                      <a href="https://sprngbt.com/mb_ios" target="_blank" rel="noopener noreferrer">iPad / iOS</a>
+                      <span class="qr-hover" tabindex="0" aria-label="Show larger iPad and iOS QR code">
+                        <img class="qr-thumb" src="sprngbt.com.mb_ios.svg" alt="iPad and iOS QR code" />
+                        <span class="qr-popup" aria-hidden="true">
+                          <img src="sprngbt.com.mb_ios.svg" alt="" />
+                        </span>
+                      </span>
+                    </span>
                   </td>
                   <td>
                     <span class="method">BLE only</span>
@@ -509,42 +544,34 @@
                 </tr>
                 <tr>
                   <td>
-                    <span class="qr-hover">
-                      Android (3<sup>rd</sup> party app)
-                      <span class="qr-popup">
-                        <img src="sprngbt.com.and.svg" alt="QR code for Android Google Play link" />
+                    <span class="platform-option">
+                      <a href="https://sprngbt.com/mb_and" target="_blank" rel="noopener noreferrer">Android</a>
+                      <span class="qr-hover" tabindex="0" aria-label="Show larger Android QR code">
+                        <img class="qr-thumb" src="sprngbt.com.mb_and.svg" alt="Android QR code" />
+                        <span class="qr-popup" aria-hidden="true">
+                          <img src="sprngbt.com.mb_and.svg" alt="" />
+                        </span>
                       </span>
                     </span>
-                  </td>
-                  <td>
-                    <a href="https://play.google.com/store/apps/details?id=com.cocuberobot.mb" target="_blank" rel="noopener noreferrer">
-                      Google Play
-                    </a>
                   </td>
                   <td>
                     <span class="method">BLE only</span>
                   </td>
                 </tr>
                 <tr>
-                  <td>Raspberry Pi (Raspbian)</td>
                   <td>
-                    <a href="https://microblocks.fun/downloads/latest/packages/ublocks-armhf.deb" target="_blank" rel="noopener noreferrer">
-                      ublocks-armhf.deb
-                    </a>
+                    <span class="platform-option">
+                      <a href="https://sprngbt.com/mb_rpi" target="_blank" rel="noopener noreferrer">Raspberry Pi</a>
+                      <span class="qr-hover" tabindex="0" aria-label="Show larger Raspberry Pi QR code">
+                        <img class="qr-thumb" src="sprngbt.com.mb_rpi.svg" alt="Raspberry Pi QR code" />
+                        <span class="qr-popup" aria-hidden="true">
+                          <img src="sprngbt.com.mb_rpi.svg" alt="" />
+                        </span>
+                      </span>
+                    </span>
                   </td>
                   <td>
                     <span class="method">USB only</span>
-                  </td>
-                </tr>                
-                <tr>
-                  <td>Other</td>
-                  <td>
-                    <a href="https://microblocks.fun/releases" target="_blank" rel="noopener noreferrer">
-                      Releases folder
-                    </a>
-                  </td>
-                  <td>
-                    <span class="method">Depends on platform</span>
                   </td>
                 </tr>
               </tbody>
