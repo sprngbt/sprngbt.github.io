@@ -1,0 +1,8 @@
+module main
+author Oliver Gotfredsen
+version 1.0
+description 'Using the A and B buttons, move an LED around the 5x5 screen. Use A+B to switch between moving on the X-axis and the Y-axis.'
+codeimage Move_the_LED.png
+storyimage
+url
+files

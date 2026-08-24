@@ -1,0 +1,8 @@
+module main
+author Unknown
+version 1.1
+description 'Using the accelerometer, move an LED around by tilting the board.'
+codeimage Balance(1.1).png
+storyimage
+url
+files

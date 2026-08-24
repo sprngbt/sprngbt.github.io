@@ -1,5 +1,17 @@
 [
   {
+    "file": "BalanceLED/BalanceLED.ubp",
+    "download": "BalanceLED/BalanceLED.ubp",
+    "example_name": "BalanceLED",
+    "author": "Unknown",
+    "version": "1.1",
+    "description": "Using the accelerometer, move an LED around by tilting the board.",
+    "codeimage": "BalanceLED/Balance(1.1).png",
+    "storyimage": "",
+    "url": "",
+    "files": []
+  },
+  {
     "file": "ESPnow/ESPnow.ubp",
     "download": "ESPnow/ESPnow.ubp",
     "example_name": "ESPnow",
@@ -19,6 +31,18 @@
     "version": "1.0",
     "description": "Using the A and B buttons, increase and decrease the octaves of the happy birthday song while it plays.",
     "codeimage": "HappyOctaves/HappyOctaves.png",
+    "storyimage": "",
+    "url": "",
+    "files": []
+  },
+  {
+    "file": "Move_the_LED/Move_the_LED.ubp",
+    "download": "Move_the_LED/Move_the_LED.ubp",
+    "example_name": "Move_the_LED",
+    "author": "Oliver Gotfredsen",
+    "version": "1.0",
+    "description": "Using the A and B buttons, move an LED around the 5x5 screen. Use A+B to switch between moving on the X-axis and the Y-axis.",
+    "codeimage": "Move_the_LED/Move_the_LED.png",
     "storyimage": "",
     "url": "",
     "files": []
