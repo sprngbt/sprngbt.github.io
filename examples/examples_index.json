@@ -12,14 +12,14 @@
     "files": []
   },
   {
-    "file": "Classroom Light Level Check/Classroom Light Level Yes or No.ubp",
-    "download": "Classroom Light Level Check/Classroom Light Level Yes or No.ubp",
-    "example_name": "Classroom Light Level Yes or No",
+    "file": "Classroom_Light/Classroom_Light.ubp",
+    "download": "Classroom_Light/Classroom_Light.ubp",
+    "example_name": "Classroom_Light",
     "author": "Judi Sandrock",
     "version": "1.0",
-    "description": "Classroom light level check. This example shows if there is sufficient light in a classroom for effective reading and learning. The display shows \"yes\" if the light level is sufficient, and \"no\" if it is not.\ncodeimage Classroom Light Level Yes or No.png\nstoryimage Classroom light.png\nurl \nfiles",
-    "codeimage": "",
-    "storyimage": "",
+    "description": "Classroom light level check. This example shows if there is sufficient light in a classroom for effective reading and learning. The display shows \"yes\" if the light level is sufficient, and \"no\" if it is not.",
+    "codeimage": "Classroom_Light/Classroom_Light.png",
+    "storyimage": "Classroom_Light/Classroom_Light_Story.png",
     "url": "",
     "files": []
   },
