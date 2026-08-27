@@ -1,0 +1,29 @@
+module 'PLB' Input
+author Bjarke Gotfredsen
+version 1 0 
+description 'MAX17048 1-cell Fuel Gauge aka Battery Monitor for the PLB 18350 Battery Unit.
+Returns State of Charge (SoC) in Percent and Voltage level in mV
+Data sheet: https://www.analog.com/media/en/technical-documentation/data-sheets/MAX17048-MAX17049.pdf'
+
+  spec 'r' 'PLB connected' 'PLB connected'
+  spec 'r' 'PLB state of charge (%)' 'PLB state of charge (%)'
+  spec 'r' 'PLB voltage (mV)' 'PLB voltage (mV)'
+
+to 'PLB connected' {
+  local 'var' (newList 2)
+  '[sensors:i2cWrite]' (hexToInt '36') 8
+  '[sensors:i2cRead]' (hexToInt '36') var
+  return (and ('[sensors:i2cExists]' (hexToInt '36')) ((((at 1 var) << 8) | (at 2 var)) == 18))
+}
+
+to 'PLB state of charge (%)' {
+  return (minimum (i2cGet (hexToInt '36') 4) 100)
+}
+
+to 'PLB voltage (mV)' {
+  local 'var' (newList 2)
+  '[sensors:i2cWrite]' (hexToInt '36') 2
+  '[sensors:i2cRead]' (hexToInt '36') var
+  return (((((at 1 var) << 8) | (at 2 var)) * 625) / 8000)
+}
+

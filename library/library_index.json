@@ -52,5 +52,14 @@
     "author": "José García Yeste",
     "version": "1.0",
     "description": "SPL06-001 Air pressure sensor\nTested on Springbot Demo Kit\nBase on https://github.com/ArtronShop/ArtronShop_SPL06-001/"
+  },
+  {
+    "file": "PLB.ubl",
+    "download": "PLB.ubl",
+    "module_name": "PLB",
+    "module_type": "Input",
+    "author": "Bjarke Gotfredsen",
+    "version": "1.0",
+    "description": "MAX17048 1-cell Fuel Gauge aka Battery Monitor for the PLB 18350 Battery Unit.\nReturns State of Charge (SoC) in Percent and Voltage level in mV\nData sheet: https://www.analog.com/media/en/technical-documentation/data-sheets/MAX17048-MAX17049.pdf"
   }
 ]
