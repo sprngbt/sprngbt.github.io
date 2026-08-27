@@ -27,6 +27,15 @@
     "description": "STEM I2C color sensor (VEML6040).\n\nHue return -1 and color return gray when sensing black, white, or gray.\n\nTechnical info:\nhttps://www.vishay.com/en/product/84276/"
   },
   {
+    "file": "INA.ubl",
+    "download": "INA.ubl",
+    "module_name": "INA",
+    "module_type": "Input",
+    "author": "Bjarke Gotfredsen",
+    "version": "1.0",
+    "description": "GNSS (GPS, GLONASS, BeiDou, Galileo) over I2C\n\nWorks with INA GNSS Reciever based on Quectel L76-L\nhttps://www.quectel.com/product/gnss-l76-l/\n\nonly reads the NMEA-0183 $GPRMC log"
+  },
+  {
     "file": "ITA.ubl",
     "download": "ITA.ubl",
     "module_name": "ITA",

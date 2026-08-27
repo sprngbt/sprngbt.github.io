@@ -1,0 +1,125 @@
+module INA Input
+author Bjarke Gotfredsen
+version 1 0 
+choices position latitude longitude 
+choices timeOrDate 'time (H:M:S)' 'date (Y-M-D)' 
+choices component second minute hour day month year 
+description 'GNSS (GPS, GLONASS, BeiDou, Galileo) over I2C
+
+Works with INA GNSS Reciever based on Quectel L76-L
+https://www.quectel.com/product/gnss-l76-l/
+
+only reads the NMEA-0183 $GPRMC log'
+
+variables GNSS_record pageSwap 'INA data available' 
+
+  spec ' ' 'INA loop' 'INA loop'
+  space
+  spec 'r' 'INA fix' 'INA fix'
+  spec 'r' 'INA connected' 'INA connected'
+  space
+  spec 'r' 'getPosition' 'INA position _' 'menu.position' 'latitude'
+  spec 'r' 'INA course over ground (º)' 'INA course over ground (º)'
+  spec 'r' 'INA speed over ground (km/h)' 'INA speed over ground (km/h)'
+  space
+  spec 'r' 'getTimeOrDate' 'INA clock _' 'menu.timeOrDate' 'time (H:M:S)'
+  spec 'r' 'getComponent' 'INA clock _' 'menu.component' 'second'
+  advanced
+  spec 'r' 'checkSum' 'checkSum _' 'auto' '10'
+
+to 'INA connected' {
+  return ('[sensors:i2cExists]' (hexToInt '10'))
+}
+
+to 'INA course over ground (º)' {
+  if (v 'INA data available') {return (at 9 GNSS_record)}
+  return -1
+}
+
+to 'INA fix' {
+  if (v 'INA data available') {if ((at 3 GNSS_record) == 'V') {
+    return (booleanConstant false)
+  } else {
+    return (booleanConstant true)
+  }}
+  return -1
+}
+
+to 'INA loop' {
+  local 'string' (newList 0)
+  forever {
+    local 'data' (newList 1)
+    '[sensors:i2cRead]' (hexToInt '10') data
+    local 'char' ('[data:joinStrings]' data)
+    if (char < 32) {
+      if ((size string) > 4) {if (checkSum string) {
+        local 'elements' ('[data:split]' ('[data:joinStrings]' string) ',')
+        string = 0
+        if (and (('[data:find]' 'RMC' (at 1 elements)) > 2) ((size elements) == 14)) {
+          'INA data available' = (booleanConstant false)
+          GNSS_record = (newList 0)
+          for i 10 {
+            '[data:addLast]' (at i elements) GNSS_record
+          }
+          'INA data available' = (booleanConstant true)
+          exitLoop
+        }
+      }}
+      string = ('[data:makeList]')
+    } else {
+      if (char == 36) {string = ('[data:makeList]')}
+      '[data:addLast]' ('[data:unicodeString]' char) string
+    }
+  }
+}
+
+to 'INA speed over ground (km/h)' {
+  if (v 'INA data available') {return (((at 8 GNSS_record) * 1852) / 1000)}
+  return -1
+}
+
+to checkSum s {
+  local 'input' ('[data:split]' ('[data:joinStrings]' s) '*')
+  if ((size input) != 2) {
+    return (booleanConstant false)
+  }
+  local 'gs' 0
+  for i ('[data:range]' 2 (size (at 1 input))) {
+    gs = (gs ^ ('[data:unicodeAt]' i (at 1 input)))
+  }
+  if (gs == (hexToInt (at 2 input))) {
+    return (booleanConstant true)
+  }
+  return (booleanConstant true)
+}
+
+to getComponent which {
+  if (v 'INA data available') {
+    local 'parm' ('[data:makeList]' 'second' 'minute' 'hour' 'day' 'month' 'year')
+    local 'element' ('[data:makeList]' 2 2 2 10 10 10)
+    local 'offset-10' ('[data:makeList]' 5 3 1 1 3 5)
+    local 'offset-1' ('[data:makeList]' 6 4 2 2 4 6)
+    local 'i' ('[data:find]' which parm)
+    return ('[data:convertType]' ('[data:joinStrings]' ('[data:makeList]' (at (at i offset-10) (at (at i element) GNSS_record)) (at (at i offset-1) (at (at i element) GNSS_record)))) 'number')
+  }
+  return -1
+}
+
+to getPosition which {
+  if (v 'INA data available') {if ('latitude' == which) {
+    return ('[data:joinStrings]' ('[data:makeList]' (at 4 GNSS_record) (at 5 GNSS_record)))
+  } else {
+    return ('[data:joinStrings]' ('[data:makeList]' (at 6 GNSS_record) (at 7 GNSS_record)))
+  }}
+  return -1
+}
+
+to getTimeOrDate which {
+  if (v 'INA data available') {if ('time (H:M:S)' == which) {
+    return ('[data:joinStrings]' ('[data:makeList]' (at 1 (at 2 GNSS_record)) (at 2 (at 2 GNSS_record)) ':' (at 3 (at 2 GNSS_record)) (at 4 (at 2 GNSS_record)) ':' (at 5 (at 2 GNSS_record)) (at 6 (at 2 GNSS_record))))
+  } else {
+    return ('[data:joinStrings]' ('[data:makeList]' (at 5 (at 10 GNSS_record)) (at 6 (at 10 GNSS_record)) '-' (at 3 (at 10 GNSS_record)) (at 4 (at 10 GNSS_record)) '-' (at 1 (at 10 GNSS_record)) (at 2 (at 10 GNSS_record))))
+  }}
+  return -1
+}
+
