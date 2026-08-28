@@ -32,8 +32,8 @@
     "module_name": "INA",
     "module_type": "Input",
     "author": "Bjarke Gotfredsen",
-    "version": "1.0",
-    "description": "GNSS (GPS, GLONASS, BeiDou, Galileo) over I2C\n\nWorks with INA GNSS Reciever based on Quectel L76-L\nhttps://www.quectel.com/product/gnss-l76-l/\n\nonly reads the NMEA-0183 $GPRMC log"
+    "version": "1.1",
+    "description": "GNSS (GPS, GLONASS, Galileo, BeiDou, QZSS) over I2C\n\nWorks with INA GNSS Receiver based on Quectel L76-L\nhttps://www.quectel.com/product/gnss-l76-l/\nonly reads the NMEA-0183 $GPRMC log\n\nINA init: run once at start.\nINA loop: run inside a loop to refresh GNSS data.\nINA fix: true when positional fix. Date/time can be available before fix.\nINA sleep: put INA to sleep, but wakes up with any activity on I2C towards INA.\nINA balloon mode: extends the altitude coverage from 10km to 80km"
   },
   {
     "file": "ITA.ubl",
