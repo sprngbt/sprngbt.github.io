@@ -1,0 +1,408 @@
+module main
+author unknown
+version 1 0 
+description ''
+variables json file 
+
+  spec 'r' 'json Structure' 'json Structure _' 'auto' 'list of jsons'
+  spec 'r' 'json' 'json _ _' 'auto auto' 'key' 'value or json Structure'
+  spec 'r' 'pretty' 'pretty _' 'auto' 'json Structure'
+  spec 'r' 'str' 'str _' 'auto' 'string'
+  spec ' ' 'output to OLED' 'output to OLED _' 'auto' '10'
+  spec ' ' 'output to file' 'output to file _' 'auto' 10
+  spec ' ' 'output to screen' 'output to screen _' 'auto' '10'
+  spec ' ' 'show all JSONs' 'show all JSONs _' 'auto' '10'
+
+to 'output to OLED' JSON {
+  '[tft:clear]'
+  tft_drawText (pretty JSON) 1 0 false 1
+  tft_drawText '>B' 100 50 false 2
+}
+
+to 'output to file' JSON {
+  '[file:open]' file
+  '[file:appendLine]' 'Next JSON:' file
+  '[file:appendLine]' ' ' file
+  '[file:appendLine]' JSON file
+  '[file:appendLine]' ' ' file
+  '[file:appendLine]' 'Same JSON prettified:' file
+  '[file:appendLine]' ' ' file
+  '[file:appendLine]' (pretty JSON) file
+  '[file:appendLine]' ' ' file
+  '[file:appendLine]' 'End of this JSON' file
+  '[file:appendLine]' ' ' file
+  '[file:close]' file
+}
+
+to 'output to screen' JSON {
+  sayIt JSON ('[data:unicodeString]' 10) ('[data:unicodeString]' 10) 'Prettified:' ('[data:unicodeString]' 10) (pretty JSON)
+}
+
+to 'show all JSONs' JSON {
+  'output to screen' JSON
+  'output to OLED' JSON
+  'output to file' JSON
+  comment 'Next?'
+  waitUntil (buttonB)
+  comment 'Debounce...'
+  waitMillis 500
+}
+
+script 1121 50 {
+to 'output to file' {}
+}
+
+script 62 53 {
+whenStarted
+file = 'JSON.txt'
+'[file:delete]' file
+comment 'JSON with just one key/value pair passed as a string'
+'show all JSONs' ('json Structure' (json 'temp [ºC]' ('[sensors:temperature]')))
+comment 'JSON with just several key/value pairs passed as a list'
+'show all JSONs' ('json Structure' ('[data:makeList]' (json 'light level' ('[display:lightLevel]')) (json 'animal' 'dog') (json 'standing' ((absoluteValue ('[sensors:tiltY]')) > 80))))
+comment 'Nested JSON with just several key/value pairs passed as a list'
+'show all JSONs' ('json Structure' ('[data:makeList]' (json 'CWS' ('json Structure' ('[data:makeList]' (json 'light level' ('[display:lightLevel]')) (json 'animal' 'dog')))) (json 'IWA' ('json Structure' ('[data:makeList]' (json 'light level' ('[display:lightLevel]')) (json 'standing' ((absoluteValue ('[sensors:tiltY]')) > 80)))))))
+}
+
+script 682 53 {
+to 'show all JSONs' {}
+}
+
+script 682 53 {
+to 'show all JSONs' {}
+}
+
+script 682 53 {
+to 'show all JSONs' {}
+}
+
+script 682 53 {
+to 'show all JSONs' {}
+}
+
+script 682 53 {
+to 'show all JSONs' {}
+}
+
+script 682 53 {
+to 'show all JSONs' {}
+}
+
+script 682 53 {
+to 'show all JSONs' {}
+}
+
+script 682 53 {
+to 'show all JSONs' {}
+}
+
+script 682 393 {
+to 'output to screen' {}
+}
+
+script 682 593 {
+to 'output to OLED' {}
+}
+
+
+module Files Data
+author MicroBlocks
+version 1 5 
+description 'Flash file system operations. Currently supports the LittleFS file system on ESP8266 and ESP32 boards. The GnuBlocks virtual machine (Linux and Raspberry Pi) supports the native system.'
+
+  spec ' ' '[file:open]' 'open file _' 'str'
+  spec ' ' '[file:close]' 'close file _' 'str'
+  spec ' ' '[file:delete]' 'delete file _' 'str'
+  space
+  spec ' ' '[file:appendLine]' 'append line _ to file _' 'str str'
+  spec ' ' '[file:appendBytes]' 'append bytes _ to file _' 'str str'
+  space
+  spec 'r' '[file:fileSize]' 'size of file _' 'str'
+  spec 'r' 'file_contents' 'contents of file _ : binary _' 'str bool' '' false
+  space
+  spec 'r' '[file:readLine]' 'next line of file _' 'str'
+  spec 'r' '[file:readBytes]' 'next _ bytes of file _ : starting at _' 'num str num' 100 '' 0
+  spec 'r' '[file:readInto]' 'read into _ from file _' 'str str' 'a ByteArray' ''
+  spec 'r' '[file:endOfFile]' 'end of file _' 'str'
+  space
+  spec 'r' '[file:readPosition]' 'read position of file _' 'str'
+  spec ' ' '[file:setReadPosition]' 'set read position _ of file _' 'num str' 0 ''
+  spec ' ' 'file_SkipBytes' 'skip _ bytes of file _' 'num str' 4 ''
+  space
+  spec 'r' 'file names' 'file names : in directory _' 'str'
+  spec 'r' 'file directories' 'directory names : in directory _' 'str'
+  space
+  spec 'r' '[file:systemInfo]' 'file system info'
+
+to 'file directories' dir {
+  '[file:startList]' dir
+  local 'result' ('[data:makeList]')
+  local 'fileName' ('[file:nextDirInList]')
+  repeatUntil (fileName == '') {
+    '[data:addLast]' fileName result
+    fileName = ('[file:nextDirInList]')
+  }
+  return result
+}
+
+to 'file names' dir {
+  '[file:startList]' dir
+  local 'result' ('[data:makeList]')
+  local 'fileName' ('[file:nextInList]')
+  repeatUntil (fileName == '') {
+    '[data:addLast]' fileName result
+    fileName = ('[file:nextInList]')
+  }
+  return result
+}
+
+to file_SkipBytes offset file {
+  local 'newPosition' (('[file:readPosition]' file) + offset)
+  '[file:setReadPosition]' newPosition file
+}
+
+to file_contents fileName optionBinary {
+  local 'binary' (argOrDefault 2 (booleanConstant false))
+  local 'byteCount' ('[file:fileSize]' fileName)
+  local 'result' ('[data:newByteArray]' byteCount)
+  local 'i' 1
+  '[file:open]' fileName
+  repeatUntil (i > byteCount) {
+    i += ('[file:readInto]' result fileName)
+  }
+  '[file:close]' fileName
+  return (ifExpression binary result ('[data:convertType]' result 'string'))
+}
+
+
+module 'JSON create'
+author 'Bjarke Gotfredsen'
+version 1 0 
+description 'This library assist in creating jSON structures:
+Use "json" to create key/value pairs
+Add a list with json pairs as input to "json Structure"
+You can nest jsons. Prettify json Structures with "pretty"
+See example https://apps.springbot.co.za/examples.html#JSON
+'
+
+  spec 'r' 'json' 'json _ _' 'auto auto' 'key' 'value or json Structure'
+  spec 'r' 'json Structure' 'json Structure _' 'auto' 'list of jsons'
+  space
+  spec 'r' 'pretty' 'pretty _' 'auto' 'json Structure'
+  advanced
+  spec 'r' 'str' 'str _' 'auto' 'string'
+
+to json key value {
+  return (ifExpression (and (isType key 'string') (not (isType value 'list'))) ('[data:join]' (str key) ':' (str value)) '')
+}
+
+to 'json Structure' s {
+  return (ifExpression (isType s 'list') ('[data:join]' '{' ('[data:joinStrings]' s ',') '}') ('[data:join]' '{' s '}'))
+}
+
+to pretty json {
+  local 'crlf' ('[data:unicodeString]' 10)
+  local 'indent' ('[data:makeList]')
+  local 'o' ('[data:toString]' '')
+  for i (size json) {
+    local 'c' (at i json)
+    if (c == '{') {
+      '[data:addLast]' '  ' indent
+      o = ('[data:join]' o c crlf ('[data:joinStrings]' indent))
+    } (c == '}') {
+      '[data:delete]' 1 indent
+      o = ('[data:join]' o crlf ('[data:joinStrings]' indent) c)
+    } (c == ',') {
+      o = ('[data:join]' o c crlf ('[data:joinStrings]' indent))
+    } (c == ':') {
+      o = ('[data:join]' o c ' ')
+    } else {
+      o = ('[data:join]' o c)
+    }
+  }
+  return o
+}
+
+to str s {
+  return (ifExpression (and (isType s 'string') ((at 1 s) != '{')) ('[data:join]' '"' s '"') s)
+}
+
+
+module Springbot
+author MicroBlocks
+version 1 0 
+tags tilt acceleration light temperature 
+description '
+Blocks for the Springbot including sensors and NeoPixel.'
+variables _springbot_LED_color 
+
+  spec ' ' 'springbot_setColorLED' 'set color LED to _' 'color'
+  spec ' ' 'springbot_clearColorLED' 'clear color LED'
+  spec ' ' 'springbot_brightenBy' 'brighten color LED by _' 'num' 10
+  space
+  spec 'r' 'springbot_colorSwatch' '_' 'color'
+  spec 'r' 'springbot_colorFromRGB' 'color r _ g _ b _ (0-255)' 'num num num' 100 0 0
+  spec 'r' 'springbot_randomColor' 'random color'
+  space
+  spec 'r' '[sensors:tiltX]' 'tilt x'
+  spec 'r' '[sensors:tiltY]' 'tilt y'
+  spec 'r' '[sensors:tiltZ]' 'tilt z'
+  spec 'r' '[sensors:acceleration]' 'acceleration'
+  space
+  spec 'r' '[display:lightLevel]' 'light level'
+  spec 'r' '[sensors:temperature]' 'temperature (°C)'
+
+to springbot_brightenBy delta {
+  if (_springbot_LED_color != 0) {
+    local 'h' ('[misc:hue]' _springbot_LED_color)
+    local 's' ('[misc:saturation]' _springbot_LED_color)
+    local 'v' (('[misc:brightness]' _springbot_LED_color) + delta)
+    v = (maximum 20 (minimum v 100))
+    springbot_setColorLED ('[misc:hsvColor]' h s v)
+  }
+}
+
+to springbot_clearColorLED {
+  springbot_setColorLED 0
+}
+
+to springbot_colorFromRGB r g b {
+  r = (maximum 0 (minimum r 255))
+  g = (maximum 0 (minimum g 255))
+  b = (maximum 0 (minimum b 255))
+  return (((r << 16) | (g << 8)) | b)
+}
+
+to springbot_colorSwatch color {
+  return color
+}
+
+to springbot_randomColor {
+  local 'n1' (random 100 200)
+  local 'n2' (random 0 100)
+  if (1 == (random 1 3)) {
+    return ((n1 << 16) | (n2 << 8))
+  } (1 == (random 1 2)) {
+    return ((n2 << 16) | n1)
+  } else {
+    return ((n1 << 8) | n2)
+  }
+}
+
+to springbot_setColorLED color {
+  _springbot_LED_color = color
+  '[display:neoPixelSetPin]' -1 false
+  '[display:neoPixelSend]' _springbot_LED_color
+  waitMicros 300
+}
+
+
+module 'Springbot Display' Output
+author 'bjarke@gotfredsen.com'
+version 1 0 
+depends Springbot 
+description 'Draw monochrome graphics and write text on boards with a TFT/OLED display'
+
+  spec ' ' '[tft:clear]' 'clear display'
+  space
+  spec ' ' 'tft:rect' 'draw rectangle at x _ y _ width _ height _ inverted _ : filled _' 'num num num num bool bool' 10 10 40 30 false true
+  spec ' ' 'tft:roundedRect' 'draw rounded rectangle at x _ y _ width _ height _ radius _ inverted _ : filled _' 'num num num num num bool bool' 10 10 40 30 8 false true
+  spec ' ' 'tft:circle' 'draw circle at x _ y _ radius _ inverted _ : filled _' 'num num num bool bool' 40 40 30 false true
+  spec ' ' 'tft:triangle' 'draw triangle at x _ y _ , x _ y _ , x _ y _ inverted _ : filled _' 'num num num num num num bool bool' 20 20 30 80 60 5 false true
+  spec ' ' 'tft:line' 'draw line from x _ y _ to x _ y _ inverted _' 'num num num num bool' 12 8 25 15 false
+  spec ' ' 'tft_drawVector' 'draw vector x _ y _ angle _ length _ inverted _' 'num num num num bool' 40 40 45 40 false
+  space
+  spec ' ' 'tft:text' 'write _ at x _ y _ inverted _ : scale _ wrap _ : bg inverted _' 'str num num bool num bool bool' 'Hello World!' 5 5 false 2 true true
+  spec ' ' 'tft_drawText' 'draw text _ at x _ y _ inverted _ : scale _ : bg inverted _' 'str num num bool num bool' 'Line 1
+Line 2' 50 20 false 2 true
+  space
+  spec ' ' 'tft:setPixel' 'set pixel x _ y _ to inverted _' 'num num bool' 10 10 false
+  spec ' ' '[tft:pixelRow]' 'draw pixel row _ x _ y _ : bytesPerPixel _ : palette _' 'auto num num num str' 'aList' 0 0 4
+  spec ' ' '[tft:drawBitmap]' 'draw bitmap _ palette _ at x _ y _' 'str str num num' 'aBitmap' 'a list of colors' 10 10
+  space
+  spec 'r' 'black' 'black'
+  spec 'r' 'white' 'white'
+  space
+  spec 'r' '[tft:getWidth]' 'display width'
+  spec 'r' '[tft:getHeight]' 'display height'
+  space
+  spec ' ' '[tft:setBacklight]' 'set display backlight _ (0-10)' 'num' 10
+  space
+  spec ' ' '_deferMonochromeDisplayUpdates' '_defer monochrome display updates'
+  spec ' ' '_resumeMonochromeDisplayUpdates' '_resume monochrome display updates'
+
+to '_deferMonochromeDisplayUpdates' {
+  '[tft:deferUpdates]'
+}
+
+to '_resumeMonochromeDisplayUpdates' {
+  '[tft:resumeUpdates]'
+}
+
+to black {
+  return 0
+}
+
+to 'tft:circle' x y radius inverted filled {
+  '[tft:circle]' x y radius (tft__bwColor inverted) filled
+}
+
+to 'tft:line' x1 y1 x2 y2 inverted {
+  '[tft:line]' x1 y1 x2 y2 (tft__bwColor inverted)
+}
+
+to 'tft:rect' x y w h inverted filled {
+  '[tft:rect]' x y w h (tft__bwColor inverted) filled
+}
+
+to 'tft:roundedRect' x y w h radius inverted filled {
+  '[tft:roundedRect]' x y w h radius (tft__bwColor inverted) filled
+}
+
+to 'tft:setPixel' x y inverted {
+  '[tft:setPixel]' x y (tft__bwColor inverted)
+}
+
+to 'tft:text' s x y inverted optionalScale wrap optionalBGInverted {
+  s = ('[data:convertType]' s 'string')
+  local 'scale' (argOrDefault 5 2)
+  local 'bgInverted' (argOrDefault 7 true)
+  local 'fg' (tft__bwColor inverted)
+  local 'bg' (tft__bwColor bgInverted)
+  '[tft:text]' s x y fg scale wrap bg
+}
+
+to 'tft:triangle' x1 y1 x2 y2 x3 y3 inverted filled {
+  '[tft:triangle]' x1 y1 x2 y2 x3 y3 (tft__bwColor inverted) filled
+}
+
+to tft__bwColor inverted {
+  if inverted {
+    return (black)
+  } else {
+    return (white)
+  }
+}
+
+to tft_drawText s x y inverted optionalScale optionalBGInverted {
+  s = ('[data:convertType]' s 'string')
+  local 'scale' (argOrDefault 5 2)
+  local 'bgInverted' (argOrDefault 6 true)
+  local 'fg' (tft__bwColor inverted)
+  local 'bg' (tft__bwColor bgInverted)
+  for line ('[data:split]' s ('[data:unicodeString]' 10)) {
+    '[tft:text]' line x y fg scale false bg
+    y += (8 * scale)
+  }
+}
+
+to tft_drawVector x y angle length inverted {
+  local 'endX' (x + ((length * ('[misc:sin]' (100 * (angle + 90)))) >> 14))
+  local 'endY' (y + ((length * ('[misc:sin]' (100 * angle))) >> 14))
+  'tft:line' x y endX endY inverted
+}
+
+to white {
+  return 16777215
+}
+

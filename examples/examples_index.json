@@ -48,6 +48,18 @@
     "files": []
   },
   {
+    "file": "JSON/JSON.ubp",
+    "download": "JSON/JSON.ubp",
+    "example_name": "JSON",
+    "author": "Bjarke Gotfredsen",
+    "version": "1.0",
+    "description": "This is a template",
+    "codeimage": "JSON/JSON.png",
+    "storyimage": "JSON/JSON.jpg",
+    "url": "https://youtu.be/xyz",
+    "files": []
+  },
+  {
     "file": "Move_the_LED/Move_the_LED.ubp",
     "download": "Move_the_LED/Move_the_LED.ubp",
     "example_name": "Move_the_LED",

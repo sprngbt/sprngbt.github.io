@@ -63,6 +63,15 @@
     "description": "SPL06-001 Air pressure sensor\nTested on Springbot Demo Kit\nBase on https://github.com/ArtronShop/ArtronShop_SPL06-001/"
   },
   {
+    "file": "JSON create.ubl",
+    "download": "JSON create.ubl",
+    "module_name": "JSON create",
+    "module_type": "",
+    "author": "Bjarke Gotfredsen",
+    "version": "1.0",
+    "description": "This library assist in creating jSON structures:\nUse \"json\" to create key/value pairs\nAdd a list with json pairs as input to \"json Structure\"\nYou can nest jsons. Prettify json Structures with \"pretty\"\nSee example https://apps.springbot.co.za/examples.html#JSON"
+  },
+  {
     "file": "PLB.ubl",
     "download": "PLB.ubl",
     "module_name": "PLB",

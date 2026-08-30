@@ -1,0 +1,8 @@
+module JSON
+author 'Bjarke Gotfredsen'
+version 1 0
+description 'This is a template'
+codeimage JSON.png
+storyimage JSON.jpg
+url https://youtu.be/xyz
+files 

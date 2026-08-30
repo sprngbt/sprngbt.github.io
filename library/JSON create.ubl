@@ -1,0 +1,52 @@
+module 'JSON create'
+author 'Bjarke Gotfredsen'
+version 1 0 
+description 'This library assist in creating jSON structures:
+Use "json" to create key/value pairs
+Add a list with json pairs as input to "json Structure"
+You can nest jsons. Prettify json Structures with "pretty"
+See example https://apps.springbot.co.za/examples.html#JSON
+'
+
+  spec 'r' 'json' 'json _ _' 'auto auto' 'key' 'value or json Structure'
+  spec 'r' 'json Structure' 'json Structure _' 'auto' 'list of jsons'
+  space
+  spec 'r' 'pretty' 'pretty _' 'auto' 'json Structure'
+  advanced
+  spec 'r' 'str' 'str _' 'auto' 'string'
+
+to json key value {
+  return (ifExpression (and (isType key 'string') (not (isType value 'list'))) ('[data:join]' (str key) ':' (str value)) '')
+}
+
+to 'json Structure' s {
+  return (ifExpression (isType s 'list') ('[data:join]' '{' ('[data:joinStrings]' s ',') '}') ('[data:join]' '{' s '}'))
+}
+
+to pretty json {
+  local 'crlf' ('[data:unicodeString]' 10)
+  local 'indent' ('[data:makeList]')
+  local 'o' ('[data:toString]' '')
+  for i (size json) {
+    local 'c' (at i json)
+    if (c == '{') {
+      '[data:addLast]' '  ' indent
+      o = ('[data:join]' o c crlf ('[data:joinStrings]' indent))
+    } (c == '}') {
+      '[data:delete]' 1 indent
+      o = ('[data:join]' o crlf ('[data:joinStrings]' indent) c)
+    } (c == ',') {
+      o = ('[data:join]' o c crlf ('[data:joinStrings]' indent))
+    } (c == ':') {
+      o = ('[data:join]' o c ' ')
+    } else {
+      o = ('[data:join]' o c)
+    }
+  }
+  return o
+}
+
+to str s {
+  return (ifExpression (and (isType s 'string') ((at 1 s) != '{')) ('[data:join]' '"' s '"') s)
+}
+
