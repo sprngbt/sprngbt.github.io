@@ -1,0 +1,79 @@
+module IWC Input
+author 'Bjarke Gotfredsen'
+version 1 0 
+description 'IWC Soil Moisture Sensor.
+
+Depending on how the sensor is connected to the Springbot,
+the sensor reads differently. Once assembled, calibrate.
+
+see exsample: https://apps.springbot.co.za/examples.html#SoilMoisture'
+
+variables _setDry _setWet _soil 
+
+  spec ' ' 'Calibrate' 'Calibrate'
+  spec 'r' 'Soil Moisture' 'Soil Moisture'
+  advanced
+  spec ' ' '_calGold' '_calGold'
+  spec ' ' '_calGreen' '_calGreen'
+
+to Calibrate {
+  if ((boardType) == 'Springbot Gold') {
+    '_calGold'
+  } else {
+    '_calGreen'
+  }
+  sayIt 'Calibrated!'
+}
+
+to 'Soil Moisture' {
+  if (_setWet == 0) {_setWet = 151100}
+  if (_setDry == 0) {_setDry = 68000}
+  _soil = ('[sensors:touchRead]' 0)
+  return (ifExpression (or (_soil < _setDry) (_setWet > _soil)) ('[misc:rescale]' ('[sensors:touchRead]' 0) _setDry _setWet 0 100) -1)
+}
+
+to '_calGold' {
+  sayIt 'Keep sensor dry, press B'
+  '_deferMonochromeDisplayUpdates'
+  '[tft:clear]'
+  'tft:text' 'Calibrate' 5 5 false
+  tft_drawText 'Keep the sensor dry.
+Don''t touch sensor.
+
+Press B when ready.' 5 25 false 1
+  '_resumeMonochromeDisplayUpdates'
+  waitUntil (buttonB)
+  _setDry = ('[sensors:touchRead]' 0)
+  waitMillis 500
+  sayIt 'Keep sensor wet, press B'
+  '_deferMonochromeDisplayUpdates'
+  '[tft:clear]'
+  'tft:text' 'Calibrate' 5 5 false
+  tft_drawText 'Put sensor in water,
+cover roots.
+
+Press B when ready.' 5 25 false 1
+  '_resumeMonochromeDisplayUpdates'
+  waitUntil (buttonB)
+  _setWet = ('[sensors:touchRead]' 0)
+  waitMillis 500
+  '_deferMonochromeDisplayUpdates'
+  '[tft:clear]'
+  tft_drawText 'Calibrated' 1 30 false
+  '_resumeMonochromeDisplayUpdates'
+}
+
+to '_calGreen' {
+  sayIt 'Keep sensor DRY, press B'
+  scroll_text 'DRY - B' 200
+  waitUntil (buttonB)
+  _setDry = ('[sensors:touchRead]' 0)
+  waitMillis 500
+  sayIt 'Keep sensor WET, press B'
+  scroll_text 'WET - B' 200
+  waitUntil (buttonB)
+  _setWet = ('[sensors:touchRead]' 0)
+  waitMillis 500
+  scroll_text 'CALIBRATED'
+}
+

@@ -1,0 +1,8 @@
+module SoilMoisture
+author 'Bjarke Gotfredsen'
+version 1 0
+description 'This is a an example of using the Soil Moisture xChip (IWC).
+You can expand on the code, by going into advanced mode 
+and store _setWet and _setDry values elsewhere, like hardcoded.'
+codeimage SoilMoisture.png
+storyimage IWC.png

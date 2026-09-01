@@ -63,6 +63,15 @@
     "description": "SPL06-001 Air pressure sensor\nTested on Springbot Demo Kit\nBase on https://github.com/ArtronShop/ArtronShop_SPL06-001/"
   },
   {
+    "file": "IWC.ubl",
+    "download": "IWC.ubl",
+    "module_name": "IWC",
+    "module_type": "Input",
+    "author": "Bjarke Gotfredsen",
+    "version": "1.0",
+    "description": "IWC Soil Moisture Sensor.\n\nDepending on how the sensor is connected to the Springbot,\nthe sensor reads differently. Once assembled, calibrate.\n\nsee exsample: https://apps.springbot.co.za/examples.html#SoilMoisture"
+  },
+  {
     "file": "JSON create.ubl",
     "download": "JSON create.ubl",
     "module_name": "JSON create",

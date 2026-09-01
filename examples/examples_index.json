@@ -125,6 +125,18 @@
     ]
   },
   {
+    "file": "SoilMoisture/SoilMoisture.ubp",
+    "download": "SoilMoisture/SoilMoisture.ubp",
+    "example_name": "SoilMoisture",
+    "author": "Bjarke Gotfredsen",
+    "version": "1.0",
+    "description": "This is a an example of using the Soil Moisture xChip (IWC).\nYou can expand on the code, by going into advanced mode \nand store _setWet and _setDry values elsewhere, like hardcoded.",
+    "codeimage": "SoilMoisture/SoilMoisture.png",
+    "storyimage": "SoilMoisture/IWC.png",
+    "url": "",
+    "files": []
+  },
+  {
     "file": "Temp RH AtmP OLED/Temp_RelH_AtmP_OLED.ubp",
     "download": "Temp RH AtmP OLED/Temp_RelH_AtmP_OLED.ubp",
     "example_name": "Temp_RelH_AtmP_OLED",
