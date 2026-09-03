@@ -18,6 +18,15 @@
     "description": "Support for Sensirion SGP30 Air Quality Sensor.\nReturns the CO2 in ppm and TVOC in ppb.\n\nBased on: https://github.com/adafruit/Adafruit_SGP30/blob/master/Adafruit_SGP30.cpp"
   },
   {
+    "file": "IIA.ubl",
+    "download": "IIA.ubl",
+    "module_name": "IIA",
+    "module_type": "Input",
+    "author": "Bjarke Gotfredsen",
+    "version": "1.0",
+    "description": "Support for Rohm Kionix KXTJ3-1057 accelerometer.\nFind data sheet here: https://www.mouser.com/datasheet/2/348/rohm_s_a0002904669_1-2281852.pdf"
+  },
+  {
     "file": "ILC.ubl",
     "download": "ILC.ubl",
     "module_name": "ILC",

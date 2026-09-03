@@ -1,0 +1,128 @@
+module 'IIA' Input
+author 'Bjarke Gotfredsen'
+version 1 0
+choices IIA_range '±2g' '±4g' '±8g' '±16g'
+choices IIA_accel x y z acceleration
+description 'Support for Rohm Kionix KXTJ3-1057 accelerometer.
+Find data sheet here: https://www.mouser.com/datasheet/2/348/rohm_s_a0002904669_1-2281852.pdf'
+variables _IIA_addr _IIA_range_g
+
+  spec ' ' 'IIA_setup' '#SVG#square11#00c612 IIA setup range _' 'menu.IIA_range' '±2g'
+  spec 'r' 'IIA_accelerometer' '#SVG#square11#00c612 IIA accelerometer _ (mg)' 'menu.IIA_accel' 'x'
+  space
+  spec ' ' '_IIA_find' '_IIA_find'
+  spec 'r' '_IIA_read_into' '_IIA_read_into _' 'auto'
+  spec 'r' '_IIA_signed12bit' '_IIA_signed12bit msb _ lsb _' 'num num'
+  spec 'r' '_IIA_to_mg' '_IIA_to_mg _' 'num'
+  spec 'r' '_IIA_isqrt' '_IIA_isqrt _' 'num'
+
+to '_IIA_find' {
+  _IIA_addr = 0
+  if ('[sensors:i2cExists]' (hexToInt '0E')) {
+    if ((i2cGet (hexToInt '0E') (hexToInt '0F')) == (hexToInt '35')) {
+      _IIA_addr = (hexToInt '0E')
+      return
+    }
+  }
+  if ('[sensors:i2cExists]' (hexToInt '0F')) {
+    if ((i2cGet (hexToInt '0F') (hexToInt '0F')) == (hexToInt '35')) {
+      _IIA_addr = (hexToInt '0F')
+    }
+  }
+}
+
+to IIA_setup range {
+  '_IIA_find'
+  if (_IIA_addr == 0) {return}
+
+  comment 'CTRL_REG1: PC1 must be zero while changing the range or resolution.'
+  i2cSet _IIA_addr (hexToInt '1B') 0
+
+  comment 'DATA_CTRL_REG = 3 selects a 100 Hz output data rate.'
+  i2cSet _IIA_addr (hexToInt '21') 3
+
+  comment 'Use high-resolution 12-bit output for every range.'
+  local 'ctrl' (hexToInt 'C0')
+  _IIA_range_g = 2
+  if (range == '±4g') {
+    ctrl = (hexToInt 'C8')
+    _IIA_range_g = 4
+  } (range == '±8g') {
+    ctrl = (hexToInt 'D0')
+    _IIA_range_g = 8
+  } (range == '±16g') {
+    ctrl = (hexToInt 'C4')
+    _IIA_range_g = 16
+  }
+  i2cSet _IIA_addr (hexToInt '1B') ctrl
+
+  comment 'At 100 Hz, allow two output periods for the first sample.'
+  waitMillis 20
+}
+
+to '_IIA_read_into' buf {
+  if (_IIA_addr == 0) {IIA_setup '±2g'}
+  if (_IIA_addr == 0) {return false}
+  if (not ('[sensors:i2cExists]' _IIA_addr)) {
+    _IIA_addr = 0
+    return false
+  }
+
+  comment 'The KXTJ3 auto-increments from XOUT_L (0x06) through ZOUT_H.'
+  '[sensors:i2cWrite]' _IIA_addr ('[data:makeList]' (hexToInt '06'))
+  '[sensors:i2cRead]' _IIA_addr buf
+  return true
+}
+
+to '_IIA_signed12bit' msb lsb {
+  comment '12 valid bits are left-aligned: H contains bits 11..4; L bits 3..0.'
+  local 'result' ((msb << 4) | ((lsb >> 4) & 15))
+  if (result >= 2048) {result = (result - 4096)}
+  return result
+}
+
+to '_IIA_to_mg' raw {
+  comment 'mg = raw * range(g) * 1000 / 2048, rounded to nearest mg.'
+  local 'scaled' ((raw * _IIA_range_g) * 1000)
+  if (scaled < 0) {
+    return (0 - (((0 - scaled) + 1024) >> 11))
+  }
+  return ((scaled + 1024) >> 11)
+}
+
+to '_IIA_isqrt' n {
+  comment 'Integer restoring square root. Input is at most 3 * 2048 squared.'
+  local 'result' 0
+  local 'bit' (1 << 22)
+  repeatUntil (bit <= n) {bit = (bit >> 2)}
+  repeatUntil (bit == 0) {
+    if (n >= (result + bit)) {
+      n = (n - (result + bit))
+      result = ((result >> 1) + bit)
+    } else {
+      result = (result >> 1)
+    }
+    bit = (bit >> 2)
+  }
+  return result
+}
+
+to IIA_accelerometer option {
+  local 'buf' ('[data:newByteArray]' 6)
+  if (not ('_IIA_read_into' buf)) {
+    return 'Accelerometer not found (KXTJ3-1057)'
+  }
+
+  local 'x' ('_IIA_signed12bit' (at 2 buf) (at 1 buf))
+  local 'y' ('_IIA_signed12bit' (at 4 buf) (at 3 buf))
+  local 'z' ('_IIA_signed12bit' (at 6 buf) (at 5 buf))
+
+  if (option == 'x') {return ('_IIA_to_mg' x)}
+  if (option == 'y') {return ('_IIA_to_mg' y)}
+  if (option == 'z') {return ('_IIA_to_mg' z)}
+  if (option == 'acceleration') {
+    local 'magnitude' ('_IIA_isqrt' (((x * x) + (y * y)) + (z * z)))
+    return ('_IIA_to_mg' magnitude)
+  }
+  return 'Option not supported'
+}
