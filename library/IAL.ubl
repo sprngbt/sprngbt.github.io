@@ -24,15 +24,17 @@ variables _IAL_addr _IAL_ready _IAL_zero _IAL_calibration_counts _IAL_calibratio
   spec 'r' '_IAL init' '_IAL init'
   spec 'r' '_IAL gain code' '_IAL gain code _' 'num'
   spec 'r' '_IAL rate code' '_IAL rate code _' 'num'
+  spec 'r' '_IAL sample count' '_IAL sample count _' 'auto'
   spec 'r' '_IAL wait ready' '_IAL wait ready _ ms' 'num'
   spec 'r' '_IAL read raw' '_IAL read raw'
   spec 'r' '_IAL calibrate AFE' '_IAL calibrate AFE'
 
 to 'IAL connected' {
   _IAL_addr = (hexToInt '2A')
-  if (not ('[sensors:i2cExists]' _IAL_addr)) {return false}
-  comment 'The low nibble of the revision register is fixed at 0xF.'
-  return (((i2cGet _IAL_addr (hexToInt '1F')) & 15) == 15)
+  comment 'CWA version 2+ routes I2C to GPIO17 (SDA) and GPIO18 (SCL). This also makes the library work when a generic ESP32-S3 MicroBlocks VM is installed.'
+  '[sensors:i2cSetPins]' 17 18
+  comment 'The NAU7802 has a fixed address. An acknowledgement is the documented connection test; the revision code is not a fixed device identifier.'
+  return ('[sensors:i2cExists]' _IAL_addr)
 }
 
 to '_IAL gain code' gain {
@@ -52,6 +54,17 @@ to '_IAL rate code' rate {
   if (rate == 40) {return 2}
   if (rate == 80) {return 3}
   return 7
+}
+
+to '_IAL sample count' sampleCount {
+  comment 'Custom menu values can arrive as either text or integers. Always return an integer for minimum, repeat, and division operations.'
+  if (sampleCount == 1) {return 1}
+  if (sampleCount == 2) {return 2}
+  if (sampleCount == 4) {return 4}
+  if (sampleCount == 8) {return 8}
+  if (sampleCount == 16) {return 16}
+  if (sampleCount == 32) {return 32}
+  return 8
 }
 
 to '_IAL wait ready' timeout {
@@ -153,7 +166,7 @@ to 'IAL raw reading' {
 
 to 'IAL average reading' sampleCount {
   if (not ('_IAL init')) {return 0}
-  sampleCount = (maximum 1 (minimum 32 sampleCount))
+  sampleCount = ('_IAL sample count' sampleCount)
   local 'total' 0
   repeat sampleCount {
     local 'reading' ('_IAL read raw')
@@ -164,8 +177,8 @@ to 'IAL average reading' sampleCount {
 }
 
 to 'IAL tare' sampleCount {
-  local 'reading' ('IAL average reading' sampleCount)
-  if (_IAL_last_valid) {_IAL_zero = reading}
+  comment 'The averaging block waits for every requested conversion. Store its completed result directly as the zero point.'
+  _IAL_zero = ('IAL average reading' sampleCount)
 }
 
 to 'IAL calibrate' knownMass sampleCount {
