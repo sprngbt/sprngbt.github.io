@@ -1,0 +1,194 @@
+module 'IAL' Input
+author 'Bjarke Gotfredsen'
+version 1 0
+choices IAL_gain 1 2 4 8 16 32 64 128
+choices IAL_rate 10 20 40 80 320
+choices IAL_samples 1 2 4 8 16 32
+description 'Support for the NAU7802 Load Cell Interface Chipset.
+Data sheet: https://cdn.sparkfun.com/assets/e/c/8/7/6/NAU7802_Data_Sheet_V1.7.pdf'
+variables _IAL_addr _IAL_ready _IAL_zero _IAL_calibration_counts _IAL_calibration_mass _IAL_last_valid
+
+  spec ' ' 'IAL setup' '#SVG#square11#00c612 IAL setup gain _ samples/sec _' 'menu.IAL_gain menu.IAL_rate' 128 80
+  spec 'r' 'IAL connected' 'IAL connected?'
+  spec 'r' 'IAL data ready' 'IAL data ready?'
+  space
+  spec 'r' 'IAL raw reading' 'IAL raw reading'
+  spec 'r' 'IAL average reading' 'IAL average of _ readings' 'menu.IAL_samples' 8
+  space
+  spec ' ' 'IAL tare' 'IAL tare using _ readings' 'menu.IAL_samples' 16
+  spec ' ' 'IAL calibrate' 'IAL calibrate _ grams using _ readings' 'num menu.IAL_samples' 1000 16
+  spec 'r' 'IAL weight' 'IAL weight using _ readings (grams)' 'menu.IAL_samples' 8
+  spec 'r' 'IAL zero offset' 'IAL zero offset'
+  spec 'r' 'IAL calibration span' 'IAL calibration span (counts)'
+  space
+  spec 'r' '_IAL init' '_IAL init'
+  spec 'r' '_IAL gain code' '_IAL gain code _' 'num'
+  spec 'r' '_IAL rate code' '_IAL rate code _' 'num'
+  spec 'r' '_IAL wait ready' '_IAL wait ready _ ms' 'num'
+  spec 'r' '_IAL read raw' '_IAL read raw'
+  spec 'r' '_IAL calibrate AFE' '_IAL calibrate AFE'
+
+to 'IAL connected' {
+  _IAL_addr = (hexToInt '2A')
+  if (not ('[sensors:i2cExists]' _IAL_addr)) {return false}
+  comment 'The low nibble of the revision register is fixed at 0xF.'
+  return (((i2cGet _IAL_addr (hexToInt '1F')) & 15) == 15)
+}
+
+to '_IAL gain code' gain {
+  if (gain == 1) {return 0}
+  if (gain == 2) {return 1}
+  if (gain == 4) {return 2}
+  if (gain == 8) {return 3}
+  if (gain == 16) {return 4}
+  if (gain == 32) {return 5}
+  if (gain == 64) {return 6}
+  return 7
+}
+
+to '_IAL rate code' rate {
+  if (rate == 10) {return 0}
+  if (rate == 20) {return 1}
+  if (rate == 40) {return 2}
+  if (rate == 80) {return 3}
+  return 7
+}
+
+to '_IAL wait ready' timeout {
+  local 'start' (millisOp)
+  repeatUntil (or (((i2cGet _IAL_addr 0) & (hexToInt '20')) != 0) ((millisSince start) >= timeout)) {
+    waitMillis 1
+  }
+  return (((i2cGet _IAL_addr 0) & (hexToInt '20')) != 0)
+}
+
+to '_IAL calibrate AFE' {
+  comment 'CALMOD = 00 selects the internal AFE offset calibration.'
+  local 'value' (i2cGet _IAL_addr 2)
+  i2cSet _IAL_addr 2 ((value & (hexToInt 'FC')) | 4)
+
+  local 'start' (millisOp)
+  repeatUntil (or (((i2cGet _IAL_addr 2) & 4) == 0) ((millisSince start) >= 1000)) {
+    waitMillis 1
+  }
+  value = (i2cGet _IAL_addr 2)
+  if ((value & 4) != 0) {return false}
+  return ((value & 8) == 0)
+}
+
+to 'IAL setup' gain rate {
+  _IAL_ready = false
+  _IAL_last_valid = false
+  if (not ('IAL connected')) {return}
+
+  comment 'Reset the digital registers, then release reset.'
+  i2cSet _IAL_addr 0 1
+  waitMillis 1
+  i2cSet _IAL_addr 0 0
+
+  comment 'Power the digital and analog sections and wait for power-ready.'
+  i2cSet _IAL_addr 0 6
+  local 'start' (millisOp)
+  repeatUntil (or (((i2cGet _IAL_addr 0) & 8) != 0) ((millisSince start) >= 100)) {
+    waitMillis 1
+  }
+  if (((i2cGet _IAL_addr 0) & 8) == 0) {return}
+
+  comment 'Start conversions, select the internal 3.3V analog LDO, and connect it to AVDD.'
+  i2cSet _IAL_addr 0 ((i2cGet _IAL_addr 0) | (hexToInt '90'))
+  i2cSet _IAL_addr 1 ((4 << 3) | ('_IAL gain code' gain))
+
+  comment 'Set the conversion rate while retaining the channel and calibration bits.'
+  local 'value' (i2cGet _IAL_addr 2)
+  i2cSet _IAL_addr 2 ((value & (hexToInt '8F')) | (('_IAL rate code' rate) << 4))
+
+  comment 'Recommended power-on settings: disable CLK_CHP, enable the PGA output capacitor, and use normal LDO mode.'
+  value = (i2cGet _IAL_addr (hexToInt '15'))
+  i2cSet _IAL_addr (hexToInt '15') (value | (hexToInt '30'))
+  value = (i2cGet _IAL_addr (hexToInt '1C'))
+  i2cSet _IAL_addr (hexToInt '1C') (value | (hexToInt '80'))
+  value = (i2cGet _IAL_addr (hexToInt '1B'))
+  i2cSet _IAL_addr (hexToInt '1B') (value & (hexToInt 'BF'))
+
+  waitMillis 200
+  if (not ('_IAL calibrate AFE')) {return}
+
+  comment 'Discard three settling samples after power-up and calibration.'
+  repeat 3 {
+    if (not ('_IAL wait ready' 1000)) {return}
+    '_IAL read raw'
+  }
+  _IAL_ready = true
+}
+
+to '_IAL init' {
+  if (_IAL_ready) {return true}
+  'IAL setup' 128 80
+  return _IAL_ready
+}
+
+to 'IAL data ready' {
+  if (not ('_IAL init')) {return false}
+  return (((i2cGet _IAL_addr 0) & (hexToInt '20')) != 0)
+}
+
+to '_IAL read raw' {
+  _IAL_last_valid = false
+  if (not ('_IAL wait ready' 1000)) {return 0}
+
+  comment 'Read the 24-bit ADC result, most-significant byte first.'
+  local 'buf' ('[data:newByteArray]' 3)
+  '[sensors:i2cWrite]' _IAL_addr ('[data:makeList]' (hexToInt '12'))
+  '[sensors:i2cRead]' _IAL_addr buf
+  local 'result' ((((at 1 buf) << 16) | ((at 2 buf) << 8)) | (at 3 buf))
+  if (result >= (1 << 23)) {result = (result - (1 << 24))}
+  _IAL_last_valid = true
+  return result
+}
+
+to 'IAL raw reading' {
+  if (not ('_IAL init')) {return 0}
+  return ('_IAL read raw')
+}
+
+to 'IAL average reading' sampleCount {
+  if (not ('_IAL init')) {return 0}
+  sampleCount = (maximum 1 (minimum 32 sampleCount))
+  local 'total' 0
+  repeat sampleCount {
+    local 'reading' ('_IAL read raw')
+    if (not _IAL_last_valid) {return 0}
+    total = (total + reading)
+  }
+  return (total / sampleCount)
+}
+
+to 'IAL tare' sampleCount {
+  local 'reading' ('IAL average reading' sampleCount)
+  if (_IAL_last_valid) {_IAL_zero = reading}
+}
+
+to 'IAL calibrate' knownMass sampleCount {
+  if (knownMass == 0) {return}
+  local 'reading' ('IAL average reading' sampleCount)
+  if (not _IAL_last_valid) {return}
+  local 'span' (reading - _IAL_zero)
+  if (span == 0) {return}
+  _IAL_calibration_counts = span
+  _IAL_calibration_mass = knownMass
+}
+
+to 'IAL weight' sampleCount {
+  if (_IAL_calibration_counts == 0) {return 'Scale not calibrated'}
+  local 'reading' ('IAL average reading' sampleCount)
+  if (not _IAL_last_valid) {return 'NAU7802 not ready'}
+  return (((reading - _IAL_zero) * _IAL_calibration_mass) / _IAL_calibration_counts)
+}
+
+to 'IAL zero offset' {
+  return _IAL_zero
+}
+
+to 'IAL calibration span' {
+  return _IAL_calibration_counts
+}
