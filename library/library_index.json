@@ -1,5 +1,14 @@
 [
   {
+    "file": "IAL.ubl",
+    "download": "IAL.ubl",
+    "module_name": "IAL",
+    "module_type": "Input",
+    "author": "Bjarke Gotfredsen",
+    "version": "1.0",
+    "description": "Support for the NAU7802 Load Cell Interface Chipset.\nData sheet: https://cdn.sparkfun.com/assets/e/c/8/7/6/NAU7802_Data_Sheet_V1.7.pdf"
+  },
+  {
     "file": "ICR.ubl",
     "download": "ICR.ubl",
     "module_name": "ICR",
