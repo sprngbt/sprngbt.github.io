@@ -1,0 +1,184 @@
+module 'PLA' Input
+author 'Bjarke Gotfredsen'
+version 1 0
+choices PLA_charge_current 100 125 150 175 200 300 400 500 600 700 800 900 1000
+description 'Support for XP2101 power management integrated circuit (PMIC).
+Find data sheet here: http://www.x-powers.com/en.php/Info/product_detail/article_id/95'
+variables _PLA_addr _PLA_ready
+
+  spec ' ' 'PLA setup' '#SVG#square11#00c612 PLA setup charge current _ mA' 'menu.PLA_charge_current' 500
+  spec 'r' 'PLA connected' 'PLA connected?'
+  space
+  spec 'r' 'PLA battery SoC' 'PLA battery SoC (%)'
+  spec 'r' 'PLA battery voltage' 'PLA battery voltage (mV)'
+  spec 'r' 'PLA battery connected' 'PLA battery connected?'
+  spec 'r' 'PLA charging' 'PLA charging?'
+  spec 'r' 'PLA charge status' 'PLA charge status'
+  space
+  spec 'r' 'PLA Vsrc present' 'PLA Vsrc present?'
+  spec 'r' 'PLA input voltage' 'PLA Vsrc input voltage (mV)'
+  spec 'r' 'PLA system voltage' 'PLA system voltage (mV)'
+  spec 'r' 'PLA output voltage' 'PLA 3.3V output setting (mV)'
+  spec 'r' 'PLA die temperature' 'PLA die temperature (°C x10)'
+  space
+  spec 'r' '_PLA init' '_PLA init'
+  spec 'r' '_PLA read ADC' '_PLA read ADC high reg _ mask _' 'num num'
+  spec 'r' '_PLA charge code' '_PLA charge code for _ mA' 'num'
+
+to 'PLA connected' {
+  _PLA_addr = (hexToInt '34')
+  if (not ('[sensors:i2cExists]' _PLA_addr)) {return false}
+  return ((i2cGet _PLA_addr (hexToInt '03')) == (hexToInt '4A'))
+}
+
+to '_PLA charge code' current {
+  if (current <= 100) {return 4}
+  if (current == 125) {return 5}
+  if (current == 150) {return 6}
+  if (current == 175) {return 7}
+  if (current == 200) {return 8}
+  if (current == 300) {return 9}
+  if (current == 400) {return 10}
+  if (current == 500) {return 11}
+  if (current == 600) {return 12}
+  if (current == 700) {return 13}
+  if (current == 800) {return 14}
+  if (current == 900) {return 15}
+  return 16
+}
+
+to 'PLA setup' chargeCurrent {
+  _PLA_ready = false
+  if (not ('PLA connected')) {return}
+
+  comment 'Disable the optional 16-second PWRON shutdown action.'
+  local 'value' (i2cGet _PLA_addr (hexToInt '10'))
+  i2cSet _PLA_addr (hexToInt '10') (value & (hexToInt 'FB'))
+
+  comment 'Do not let a long PWRON press switch the PMIC off.'
+  value = (i2cGet _PLA_addr (hexToInt '22'))
+  i2cSet _PLA_addr (hexToInt '22') (value & (hexToInt 'FD'))
+
+  comment 'Keep BATFET enabled in battery-only mode.'
+  value = (i2cGet _PLA_addr (hexToInt '12'))
+  i2cSet _PLA_addr (hexToInt '12') (value | 8)
+
+  comment 'Use 4.36V VBUS DPM and a 1.5A input-current ceiling for 5V Vsrc.'
+  value = (i2cGet _PLA_addr (hexToInt '15'))
+  i2cSet _PLA_addr (hexToInt '15') ((value & (hexToInt 'F0')) | 6)
+  value = (i2cGet _PLA_addr (hexToInt '16'))
+  i2cSet _PLA_addr (hexToInt '16') ((value & (hexToInt 'F8')) | 4)
+
+  comment 'Enable fuel gauge and cell charging; disable backup charger and watchdog.'
+  value = (i2cGet _PLA_addr (hexToInt '18'))
+  i2cSet _PLA_addr (hexToInt '18') ((value & (hexToInt 'F0')) | 10)
+
+  comment 'The schematic has a fixed 10K TS resistor, not a temperature sensor. Disable TS charge inhibition.'
+  value = (i2cGet _PLA_addr (hexToInt '50'))
+  i2cSet _PLA_addr (hexToInt '50') ((value & (hexToInt 'E0')) | (hexToInt '10'))
+
+  comment 'Enable battery, VBUS, VSYS and die-temperature ADC channels.'
+  i2cSet _PLA_addr (hexToInt '30') (hexToInt '1D')
+  value = (i2cGet _PLA_addr (hexToInt '68'))
+  i2cSet _PLA_addr (hexToInt '68') (value | 1)
+
+  comment '50mA precharge, selected constant current, 25mA termination, 4.2V target.'
+  value = (i2cGet _PLA_addr (hexToInt '61'))
+  i2cSet _PLA_addr (hexToInt '61') ((value & (hexToInt 'F0')) | 2)
+  value = (i2cGet _PLA_addr (hexToInt '62'))
+  i2cSet _PLA_addr (hexToInt '62') ((value & (hexToInt 'E0')) | ('_PLA charge code' chargeCurrent))
+  value = (i2cGet _PLA_addr (hexToInt '63'))
+  i2cSet _PLA_addr (hexToInt '63') ((value & (hexToInt 'E0')) | (hexToInt '11'))
+  value = (i2cGet _PLA_addr (hexToInt '64'))
+  i2cSet _PLA_addr (hexToInt '64') ((value & (hexToInt 'F8')) | 3)
+
+  comment 'Let the PMIC drive CHGLED from charger state.'
+  value = (i2cGet _PLA_addr (hexToInt '69'))
+  i2cSet _PLA_addr (hexToInt '69') ((value & (hexToInt 'F8')) | 1)
+
+  comment 'DCDC1 voltage code 18 is 3.3V. Set voltage before enabling output.'
+  i2cSet _PLA_addr (hexToInt '82') 18
+  value = (i2cGet _PLA_addr (hexToInt '80'))
+  i2cSet _PLA_addr (hexToInt '80') (value | 1)
+
+  waitMillis 10
+  _PLA_ready = true
+}
+
+to '_PLA init' {
+  if (_PLA_ready) {return true}
+  'PLA setup' 500
+  return _PLA_ready
+}
+
+to '_PLA read ADC' highReg highMask {
+  local 'buf' ('[data:newByteArray]' 2)
+  '[sensors:i2cWrite]' _PLA_addr ('[data:makeList]' highReg)
+  '[sensors:i2cRead]' _PLA_addr buf
+  return ((((at 1 buf) & highMask) << 8) | (at 2 buf))
+}
+
+to 'PLA battery connected' {
+  if (not ('_PLA init')) {return false}
+  return (((i2cGet _PLA_addr 0) & 8) != 0)
+}
+
+to 'PLA Vsrc present' {
+  if (not ('_PLA init')) {return false}
+  return (((i2cGet _PLA_addr 0) & (hexToInt '20')) != 0)
+}
+
+to 'PLA charging' {
+  if (not ('_PLA init')) {return false}
+  return ((((i2cGet _PLA_addr 1) >> 5) & 3) == 1)
+}
+
+to 'PLA charge status' {
+  if (not ('_PLA init')) {return 'not connected'}
+  local 'status' ((i2cGet _PLA_addr 1) & 7)
+  if (status == 0) {return 'trickle charge'}
+  if (status == 1) {return 'pre-charge'}
+  if (status == 2) {return 'constant current'}
+  if (status == 3) {return 'constant voltage'}
+  if (status == 4) {return 'charge done'}
+  if (status == 5) {return 'not charging'}
+  return 'reserved status'
+}
+
+to 'PLA battery SoC' {
+  if (not ('_PLA init')) {return -1}
+  if (not ('PLA battery connected')) {return -1}
+  local 'soc' (i2cGet _PLA_addr (hexToInt 'A4'))
+  if (soc > 100) {return 100}
+  return soc
+}
+
+to 'PLA battery voltage' {
+  if (not ('_PLA init')) {return 0}
+  if (not ('PLA battery connected')) {return 0}
+  return ('_PLA read ADC' (hexToInt '34') (hexToInt '1F'))
+}
+
+to 'PLA input voltage' {
+  if (not ('_PLA init')) {return 0}
+  if (not ('PLA Vsrc present')) {return 0}
+  return ('_PLA read ADC' (hexToInt '38') (hexToInt '3F'))
+}
+
+to 'PLA system voltage' {
+  if (not ('_PLA init')) {return 0}
+  return ('_PLA read ADC' (hexToInt '3A') (hexToInt '3F'))
+}
+
+to 'PLA output voltage' {
+  if (not ('_PLA init')) {return 0}
+  return (1500 + (100 * ((i2cGet _PLA_addr (hexToInt '82')) & 31)))
+}
+
+to 'PLA die temperature' {
+  if (not ('_PLA init')) {return 0}
+  local 'raw' ('_PLA read ADC' (hexToInt '3C') (hexToInt '3F'))
+  local 'delta' (7274 - raw)
+  if (delta < 0) {return (220 - ((0 - delta) >> 1))}
+  return (220 + (delta >> 1))
+}

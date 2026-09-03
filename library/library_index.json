@@ -90,6 +90,15 @@
     "description": "This library assist in creating jSON structures:\nUse \"json\" to create key/value pairs\nAdd a list with json pairs as input to \"json Structure\"\nYou can nest jsons. Prettify json Structures with \"pretty\"\nSee example https://apps.springbot.co.za/examples.html#JSON"
   },
   {
+    "file": "PLA.ubl",
+    "download": "PLA.ubl",
+    "module_name": "PLA",
+    "module_type": "Input",
+    "author": "Bjarke Gotfredsen",
+    "version": "1.0",
+    "description": "Support for XP2101 power management integrated circuit (PMIC).\nFind data sheet here: http://www.x-powers.com/en.php/Info/product_detail/article_id/95"
+  },
+  {
     "file": "PLB.ubl",
     "download": "PLB.ubl",
     "module_name": "PLB",
