@@ -8,8 +8,8 @@ description 'Support for the NAU7802 Load Cell Interface Chipset.
 Data sheet: https://cdn.sparkfun.com/assets/e/c/8/7/6/NAU7802_Data_Sheet_V1.7.pdf'
 variables _IAL_addr _IAL_ready _IAL_zero _IAL_calibration_counts _IAL_calibration_mass _IAL_last_valid
 
-  spec ' ' 'IAL setup' '#SVG#square11#00c612 IAL setup gain _ samples/sec _' 'menu.IAL_gain menu.IAL_rate' 128 80
-  spec 'r' 'IAL connected' 'IAL connected?'
+  spec ' ' 'IAL setup' 'IAL setup gain _ samples/sec _' 'menu.IAL_gain menu.IAL_rate' 128 80
+  spec 'r' 'IAL connected' '#SVG#IAL#ffffff IAL connected?'
   spec 'r' 'IAL data ready' 'IAL data ready?'
   space
   spec 'r' 'IAL raw reading' 'IAL raw reading'
@@ -20,6 +20,8 @@ variables _IAL_addr _IAL_ready _IAL_zero _IAL_calibration_counts _IAL_calibratio
   spec 'r' 'IAL weight' 'IAL weight using _ readings (grams)' 'menu.IAL_samples' 8
   spec 'r' 'IAL zero offset' 'IAL zero offset'
   spec 'r' 'IAL calibration span' 'IAL calibration span (counts)'
+  spec 'r' 'IAL calibration values' 'IAL calibration values'
+  spec ' ' 'IAL set calibration values' 'IAL set calibration values _' 'auto' 'a list'
   space
   spec 'r' '_IAL init' '_IAL init'
   spec 'r' '_IAL gain code' '_IAL gain code _' 'num'
@@ -32,7 +34,7 @@ variables _IAL_addr _IAL_ready _IAL_zero _IAL_calibration_counts _IAL_calibratio
 to 'IAL connected' {
   _IAL_addr = (hexToInt '2A')
   comment 'CWA version 2+ routes I2C to GPIO17 (SDA) and GPIO18 (SCL). This also makes the library work when a generic ESP32-S3 MicroBlocks VM is installed.'
-  '[sensors:i2cSetPins]' 17 18
+  comment '[sensors:i2cSetPins] 17 18'
   comment 'The NAU7802 has a fixed address. An acknowledgement is the documented connection test; the revision code is not a fixed device identifier.'
   return ('[sensors:i2cExists]' _IAL_addr)
 }
@@ -204,4 +206,23 @@ to 'IAL zero offset' {
 
 to 'IAL calibration span' {
   return _IAL_calibration_counts
+}
+
+to 'IAL calibration values' {
+  comment 'List format: zero offset, calibration span in ADC counts, known calibration mass in grams.'
+  return ('[data:makeList]' _IAL_zero _IAL_calibration_counts _IAL_calibration_mass)
+}
+
+to 'IAL set calibration values' values {
+  comment 'Restore a list previously returned by IAL calibration values.'
+  if (not (isType values 'list')) {return}
+  if ((size values) < 3) {return}
+  if (not (isType (at 1 values) 'number')) {return}
+  if (not (isType (at 2 values) 'number')) {return}
+  if (not (isType (at 3 values) 'number')) {return}
+  if ((at 2 values) == 0) {return}
+  if ((at 3 values) == 0) {return}
+  _IAL_zero = (at 1 values)
+  _IAL_calibration_counts = (at 2 values)
+  _IAL_calibration_mass = (at 3 values)
 }
