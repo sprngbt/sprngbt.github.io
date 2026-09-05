@@ -1,0 +1,8 @@
+module main
+author Unknown
+version 1.0
+description 'Use button A to test your reaction speed in milliseconds. A springbot display is recommended.'
+codeimage reactiontime.png
+storyimage
+url
+files

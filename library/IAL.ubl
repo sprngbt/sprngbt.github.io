@@ -9,20 +9,24 @@ Data sheet: https://cdn.sparkfun.com/assets/e/c/8/7/6/NAU7802_Data_Sheet_V1.7.pd
 variables _IAL_addr _IAL_ready _IAL_zero _IAL_calibration_counts _IAL_calibration_mass _IAL_last_valid
 
   spec ' ' 'IAL setup' 'IAL setup gain _ samples/sec _' 'menu.IAL_gain menu.IAL_rate' 128 80
-  spec 'r' 'IAL connected' '#SVG#IAL#ffffff IAL connected?'
-  spec 'r' 'IAL data ready' 'IAL data ready?'
+  spec 'r' 'IAL connected' 'IAL connected?'
   space
-  spec 'r' 'IAL raw reading' 'IAL raw reading'
-  spec 'r' 'IAL average reading' 'IAL average of _ readings' 'menu.IAL_samples' 8
+   spec 'r' 'IAL weight' 'IAL weight using _ readings (grams)' 'menu.IAL_samples' 8
+
   space
   spec ' ' 'IAL tare' 'IAL tare using _ readings' 'menu.IAL_samples' 16
   spec ' ' 'IAL calibrate' 'IAL calibrate _ grams using _ readings' 'num menu.IAL_samples' 1000 16
-  spec 'r' 'IAL weight' 'IAL weight using _ readings (grams)' 'menu.IAL_samples' 8
-  spec 'r' 'IAL zero offset' 'IAL zero offset'
-  spec 'r' 'IAL calibration span' 'IAL calibration span (counts)'
-  spec 'r' 'IAL calibration values' 'IAL calibration values'
-  spec ' ' 'IAL set calibration values' 'IAL set calibration values _' 'auto' 'a list'
+
   space
+  spec 'r' 'IAL get calibration values' 'IAL get calibration values'
+  spec ' ' 'IAL set calibration values' 'IAL set calibration values _' 'list' 'a list'
+  space
+  advanced
+    spec 'r' 'IAL zero offset' 'IAL zero offset'
+  spec 'r' 'IAL calibration span' 'IAL calibration span (counts)'
+  spec 'r' 'IAL average reading' 'IAL average of _ readings' 'menu.IAL_samples' 8
+  spec 'r' 'IAL data ready' 'IAL data ready?'
+   spec 'r' 'IAL raw reading' 'IAL raw reading'
   spec 'r' '_IAL init' '_IAL init'
   spec 'r' '_IAL gain code' '_IAL gain code _' 'num'
   spec 'r' '_IAL rate code' '_IAL rate code _' 'num'
@@ -33,9 +37,6 @@ variables _IAL_addr _IAL_ready _IAL_zero _IAL_calibration_counts _IAL_calibratio
 
 to 'IAL connected' {
   _IAL_addr = (hexToInt '2A')
-  comment 'CWA version 2+ routes I2C to GPIO17 (SDA) and GPIO18 (SCL). This also makes the library work when a generic ESP32-S3 MicroBlocks VM is installed.'
-  comment '[sensors:i2cSetPins] 17 18'
-  comment 'The NAU7802 has a fixed address. An acknowledgement is the documented connection test; the revision code is not a fixed device identifier.'
   return ('[sensors:i2cExists]' _IAL_addr)
 }
 
@@ -208,7 +209,7 @@ to 'IAL calibration span' {
   return _IAL_calibration_counts
 }
 
-to 'IAL calibration values' {
+to 'IAL get calibration values' {
   comment 'List format: zero offset, calibration span in ADC counts, known calibration mass in grams.'
   return ('[data:makeList]' _IAL_zero _IAL_calibration_counts _IAL_calibration_mass)
 }

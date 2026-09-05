@@ -1,5 +1,14 @@
 [
   {
+    "file": "EL4.ubl",
+    "download": "EL4.ubl",
+    "module_name": "EL4",
+    "module_type": "Comm",
+    "author": "Bjarke Gotfredsen",
+    "version": "1.0",
+    "description": "Support for the Domino4 EL4 Ai-Thinker RA-02 (SX1278) LoRa radio on CWA v2.\nSoftware SPI: MISO 38, MOSI 37, SCK 36, CS 35. IRQ registers are polled; no RESET or DIO1 required.\nRaw LoRa packets, explicit headers, normal IQ. Not LoRaWAN.\nhttps://docs.ai-thinker.com/en/Ra-02/index.html"
+  },
+  {
     "file": "IAL.ubl",
     "download": "IAL.ubl",
     "module_name": "IAL",

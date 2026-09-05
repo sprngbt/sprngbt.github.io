@@ -1,0 +1,325 @@
+module 'EL4' Comm
+author 'Bjarke Gotfredsen'
+version 1 0
+tags communication
+description 'Support for the Domino4 EL4 Ai-Thinker RA-02 (SX1278) LoRa radio on CWA v2.
+Software SPI: MISO 38, MOSI 37, SCK 36, CS 35. IRQ registers are polled; no RESET or DIO1 required.
+Raw LoRa packets, explicit headers, normal IQ. Not LoRaWAN.
+https://docs.ai-thinker.com/en/Ra-02/index.html'
+choices EL4_bandwidth '125:125' '250:250' '500:500'
+choices EL4_sf '7:7' '8:8' '9:9' '10:10' '11:11' '12:12'
+choices EL4_cr '5:5' '6:6' '7:7' '8:8'
+choices EL4_sync 'private (18):18' 'public (52):52'
+variables _EL4_ready _EL4_busy _EL4_status _EL4_rx _EL4_rssi _EL4_snr4 _EL4_crc _EL4_receiving
+
+  spec 'r' 'EL4 connected' 'EL4 connected?'
+  spec 'r' 'EL4 ready' 'EL4 configured?'
+  spec 'r' 'EL4 status' 'EL4 status'
+  space
+  spec ' ' 'EL4 setup' 'EL4 setup frequency _ kHz bandwidth _ kHz #BR# SF _ coding rate 4/_ power _ dBm' 'num menu.EL4_bandwidth menu.EL4_sf menu.EL4_cr num' 433000 125 7 5 10
+  space
+  spec ' ' 'EL4 send' 'EL4 send _' 'auto' 'Hello'
+  space
+  spec ' ' 'EL4 listen' 'EL4 start receiving'
+  spec 'r' 'EL4 available' 'EL4 packet available?'
+  spec 'r' 'EL4 receive bytes' 'EL4 receive bytes'
+  spec 'r' 'EL4 receive text' 'EL4 receive text'
+  space
+  spec 'r' 'EL4 packet RSSI' 'EL4 last packet RSSI (dBm)'
+  spec 'r' 'EL4 packet SNR' 'EL4 last packet SNR (dB x4)'
+  spec ' ' 'EL4 sleep' 'EL4 sleep'
+  advanced
+  spec ' ' 'EL4 packet settings' 'EL4 sync word _ preamble _ symbols CRC _' 'menu.EL4_sync num bool' 18 8 true
+  spec ' ' '_EL4 pins' '_EL4 pins'
+  spec 'r' '_EL4 transfer' '_EL4 transfer _' 'num'
+  spec 'r' '_EL4 read' '_EL4 read register _' 'num'
+  spec ' ' '_EL4 write' '_EL4 write register _ value _' 'num num'
+  spec ' ' '_EL4 start RX' '_EL4 start RX'
+  spec ' ' '_EL4 poll' '_EL4 poll'
+  spec ' ' '_EL4 configure RF' '_EL4 configure RF _ _' 'num num'
+  spec ' ' '_EL4 configure modem' '_EL4 configure modem _ _ _' 'num num num'
+
+to '_EL4 pins' {
+  digitalWriteOp 35 true
+  digitalWriteOp 36 false
+  digitalWriteOp 37 false
+  local 'unused' (digitalReadOp 38)
+}
+
+to '_EL4 transfer' value {
+  comment 'SPI mode 0, MSB first. SX1278 permits pauses between clock edges. No hardware SPI pin defaults are used.'
+  local 'result' 0
+  repeat 8 {
+    digitalWriteOp 37 ((value & 128) != 0)
+    digitalWriteOp 36 true
+    result = (result << 1)
+    if (digitalReadOp 38) {result = (result | 1)}
+    digitalWriteOp 36 false
+    value = ((value << 1) & 255)
+  }
+  return result
+}
+
+to '_EL4 read' reg {
+  digitalWriteOp 35 false
+  local 'unused' ('_EL4 transfer' (reg & 127))
+  local 'result' ('_EL4 transfer' 0)
+  digitalWriteOp 35 true
+  return result
+}
+
+to '_EL4 write' reg value {
+  digitalWriteOp 35 false
+  local 'unused' ('_EL4 transfer' (reg | 128))
+  unused = ('_EL4 transfer' (value & 255))
+  digitalWriteOp 35 true
+}
+
+to 'EL4 connected' {
+  if (_EL4_busy == true) {return false}
+  _EL4_busy = true
+  '_EL4 pins'
+  local 'found' (('_EL4 read' 66) == 18)
+  _EL4_busy = false
+  return found
+}
+
+to 'EL4 setup' frequency bandwidth sf cr power {
+  if (_EL4_busy == true) {return}
+  frequency = (frequency + 0)
+  bandwidth = (bandwidth + 0)
+  sf = (sf + 0)
+  cr = (cr + 0)
+  power = (power + 0)
+  if (or (frequency < 410000) (frequency > 525000)) {_EL4_status = 'Frequency must be 410000..525000 kHz'; return}
+  if (not (or (bandwidth == 125) (or (bandwidth == 250) (bandwidth == 500)))) {_EL4_status = 'Bandwidth must be 125, 250 or 500 kHz'; return}
+  if (or (sf < 7) (sf > 12)) {_EL4_status = 'SF must be 7..12'; return}
+  if (or (cr < 5) (cr > 8)) {_EL4_status = 'Coding rate denominator must be 5..8'; return}
+  if (or (power < 2) (power > 17)) {_EL4_status = 'Power must be 2..17 dBm'; return}
+  _EL4_busy = true
+  _EL4_ready = false
+  _EL4_receiving = false
+  _EL4_rx = ('[data:newByteArray]' 0)
+  _EL4_rssi = 0
+  _EL4_snr4 = 0
+  '_EL4 pins'
+  if (('_EL4 read' 66) != 18) {
+    _EL4_status = 'SX1278 not found; check wiring and power'
+    _EL4_busy = false
+    return
+  }
+  comment 'Enter sleep in the current modem, then switch to LoRa low-frequency mode. No hardware reset pin is connected.'
+  '_EL4 write' 1 (('_EL4 read' 1) & 248)
+  waitMillis 2
+  '_EL4 write' 1 136
+  waitMillis 2
+  '_EL4 configure RF' frequency power
+  '_EL4 configure modem' bandwidth sf cr
+  '_EL4 write' 1 137
+  waitMillis 2
+  if ((('_EL4 read' 1) & 143) != 137) {
+    _EL4_status = 'Radio configuration failed; power cycle the module'
+    _EL4_busy = false
+    return
+  }
+  _EL4_ready = true
+  '_EL4 start RX'
+  _EL4_status = 'listening'
+  _EL4_busy = false
+}
+
+to '_EL4 configure RF' frequency power {
+  comment 'FRF = frequency(kHz) * 2048 / 125. Split the calculation to avoid 31-bit integer overflow.'
+  local 'frf' (((frequency / 125) << 11) + ((((frequency % 125) << 11) + 62) / 125))
+  '_EL4 write' 6 ((frf >> 16) & 255)
+  '_EL4 write' 7 ((frf >> 8) & 255)
+  '_EL4 write' 8 (frf & 255)
+  '_EL4 write' 9 (128 | (power - 2))
+  '_EL4 write' 77 132
+  '_EL4 write' 11 43
+  '_EL4 write' 10 9
+  '_EL4 write' 12 35
+  '_EL4 write' 14 0
+  '_EL4 write' 15 0
+}
+
+to '_EL4 configure modem' bandwidth sf cr {
+  local 'bwCode' 7
+  if (bandwidth == 250) {bwCode = 8}
+  if (bandwidth == 500) {bwCode = 9}
+  '_EL4 write' 29 ((bwCode << 4) | ((cr - 4) << 1))
+  '_EL4 write' 30 (((sf << 4) | 4) | 3)
+  '_EL4 write' 31 255
+  local 'config3' 4
+  if ((1 << sf) >= (16 * bandwidth)) {config3 = 12}
+  '_EL4 write' 38 config3
+  '_EL4 write' 49 3
+  '_EL4 write' 55 10
+  comment 'Normal IQ, explicit header, no frequency hopping, CRC on, private sync word 0x12, preamble 8.'
+  '_EL4 write' 51 39
+  '_EL4 write' 59 29
+  '_EL4 write' 36 0
+  '_EL4 write' 35 255
+  '_EL4 write' 32 0
+  '_EL4 write' 33 8
+  '_EL4 write' 57 18
+  '_EL4 write' 17 0
+  _EL4_crc = true
+  comment 'SX1278 receive errata: spurious-response mitigation and LF 500 kHz sensitivity settings.'
+  if (bandwidth == 500) {
+    '_EL4 write' 49 131
+    '_EL4 write' 54 2
+    '_EL4 write' 58 127
+  } else {
+    '_EL4 write' 47 64
+    '_EL4 write' 48 0
+    '_EL4 write' 54 3
+  }
+}
+
+to 'EL4 packet settings' syncWord preamble crc {
+  if (_EL4_busy == true) {return}
+  if (not _EL4_ready) {_EL4_status = 'Run EL4 setup first'; return}
+  syncWord = (syncWord + 0)
+  preamble = (preamble + 0)
+  if (not (or (syncWord == 18) (syncWord == 52))) {_EL4_status = 'Sync word must be private 18 or public 52'; return}
+  if (or (preamble < 6) (preamble > 64)) {_EL4_status = 'Preamble must be 6..64 symbols'; return}
+  _EL4_busy = true
+  '_EL4 write' 1 137
+  '_EL4 write' 57 syncWord
+  '_EL4 write' 32 0
+  '_EL4 write' 33 preamble
+  local 'config2' (('_EL4 read' 30) & 251)
+  _EL4_crc = (crc == true)
+  if (_EL4_crc == true) {config2 = (config2 | 4)}
+  '_EL4 write' 30 config2
+  _EL4_rx = ('[data:newByteArray]' 0)
+  '_EL4 start RX'
+  _EL4_status = 'listening'
+  _EL4_busy = false
+}
+
+to '_EL4 start RX' {
+  '_EL4 write' 1 137
+  '_EL4 write' 64 0
+  '_EL4 write' 13 0
+  '_EL4 write' 18 255
+  comment 'RX single preserves a completed packet in FIFO until polled. Polling also rearms after hardware RX timeout.'
+  '_EL4 write' 1 142
+  _EL4_receiving = true
+}
+
+to 'EL4 listen' {
+  if (_EL4_busy == true) {return}
+  if (not _EL4_ready) {_EL4_status = 'Run EL4 setup first'; return}
+  _EL4_busy = true
+  '_EL4 start RX'
+  _EL4_status = 'listening'
+  _EL4_busy = false
+}
+
+to 'EL4 send' data {
+  if (_EL4_busy == true) {return}
+  if (not _EL4_ready) {_EL4_status = 'Run EL4 setup first'; return}
+  if (not (or (isType data 'string') (or (isType data 'byte array') (isType data 'list')))) {
+    _EL4_status = 'Send text, a byte array or a list of bytes'
+    return
+  }
+  if (isType data 'list') {
+    for value data {
+      if (not (isType value 'number')) {_EL4_status = 'Byte list requires integers'; return}
+      if (or (value < 0) (value > 255)) {_EL4_status = 'Bytes must be 0..255'; return}
+    }
+  }
+  local 'bytes' ('[data:asByteArray]' data)
+  local 'length' (size bytes)
+  if (or (length < 1) (length > 255)) {_EL4_status = 'Payload must contain 1..255 bytes'; return}
+  _EL4_busy = true
+  '_EL4 write' 1 137
+  _EL4_receiving = false
+  '_EL4 write' 13 0
+  digitalWriteOp 35 false
+  local 'unused' ('_EL4 transfer' 128)
+  for value bytes {unused = ('_EL4 transfer' value)}
+  digitalWriteOp 35 true
+  '_EL4 write' 34 length
+  '_EL4 write' 18 255
+  '_EL4 write' 64 64
+  '_EL4 write' 1 139
+  local 'start' (millisOp)
+  local 'done' false
+  repeatUntil (or done ((millisSince start) >= 30000)) {
+    done = ((('_EL4 read' 18) & 8) != 0)
+    if (not done) {waitMillis 2}
+  }
+  '_EL4 write' 1 137
+  '_EL4 start RX'
+  if done {_EL4_status = 'sent'} else {_EL4_status = 'Transmit timeout'}
+  _EL4_busy = false
+}
+
+to '_EL4 poll' {
+  local 'flags' ('_EL4 read' 18)
+  if ((flags & 64) == 0) {
+    if ((flags & 128) != 0) {'_EL4 start RX'}
+    return
+  }
+  '_EL4 write' 1 137
+  local 'badCRC' ((flags & 32) != 0)
+  if (and _EL4_crc ((('_EL4 read' 28) & 64) == 0)) {badCRC = true}
+  if badCRC {
+    _EL4_status = 'Packet rejected: missing or bad CRC'
+    '_EL4 start RX'
+    return
+  }
+  local 'length' ('_EL4 read' 19)
+  _EL4_snr4 = ('_EL4 read' 25)
+  if (_EL4_snr4 >= 128) {_EL4_snr4 = (_EL4_snr4 - 256)}
+  _EL4_rssi = (('_EL4 read' 26) - 164)
+  if (_EL4_snr4 < 0) {_EL4_rssi = (_EL4_rssi + (_EL4_snr4 / 4))}
+  '_EL4 write' 13 ('_EL4 read' 16)
+  _EL4_rx = ('[data:newByteArray]' length)
+  digitalWriteOp 35 false
+  local 'unused' ('_EL4 transfer' 0)
+  for i length {atPut i _EL4_rx ('_EL4 transfer' 0)}
+  digitalWriteOp 35 true
+  '_EL4 start RX'
+  _EL4_status = 'packet received'
+}
+
+to 'EL4 available' {
+  if (_EL4_busy == true) {return false}
+  if (not _EL4_ready) {return false}
+  if ((size _EL4_rx) > 0) {return true}
+  if (not _EL4_receiving) {return false}
+  _EL4_busy = true
+  '_EL4 poll'
+  _EL4_busy = false
+  return ((size _EL4_rx) > 0)
+}
+
+to 'EL4 receive bytes' {
+  if (not ('EL4 available')) {return ('[data:newByteArray]' 0)}
+  local 'result' _EL4_rx
+  _EL4_rx = ('[data:newByteArray]' 0)
+  return result
+}
+
+to 'EL4 receive text' {
+  return ('[data:convertType]' ('EL4 receive bytes') 'string')
+}
+
+to 'EL4 ready' {return (_EL4_ready == true)}
+to 'EL4 status' {return _EL4_status}
+to 'EL4 packet RSSI' {return _EL4_rssi}
+to 'EL4 packet SNR' {return _EL4_snr4}
+
+to 'EL4 sleep' {
+  if (_EL4_busy == true) {return}
+  if (not _EL4_ready) {return}
+  _EL4_busy = true
+  '_EL4 write' 1 136
+  _EL4_receiving = false
+  _EL4_status = 'sleeping'
+  _EL4_busy = false
+}
