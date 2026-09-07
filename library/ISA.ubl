@@ -1,0 +1,111 @@
+module 'ISA' Input
+author 'Bjarke Gotfredsen'
+version 1 0
+description 'Support for the ICS-43434 and compatible standard I2S microphones on CWS/Springbot Green and Gold and Domino4 CWA v2.
+Configurable BCLK/SCK, WS, SD, sample rate and left/right slot. Measures samples, RMS, peak, estimated SPL and a dominant steady-tone frequency.
+Requires the accompanying MicroBlocks VM with I2S microphone input primitives, find them in the Microphone example here: https://apps.springbot.co.za/examples.html#Microphone.
+https://www.invensense.tdk.com/en-us/products/microphone/ics-43434
+'
+choices ISA_channel Right Left
+choices ISA_rate '16000:16000' '32000:32000' '48000:48000'
+variables _ISA_clapThreshold
+
+  spec 'r' 'ISA setup' 'ISA setup channel _ GPIO SCK _ WS _ SD _ sample rate _ Hz' 'menu.ISA_channel num num num menu.ISA_rate' 'Right' 44 43 1 16000
+  spec 'r' '[sensors:i2sMicRunning]' 'ISA running?'
+  spec 'r' 'ISA status' 'ISA status'
+  spec ' ' '[sensors:i2sMicStop]' 'ISA stop'
+  space
+  spec 'r' 'ISA measure' 'ISA measure for _ milliseconds' 'num' 100
+  space
+  spec 'r' '[sensors:i2sMicRMS]' 'ISA RMS'
+  spec 'r' '[sensors:i2sMicPeak]' 'ISA peak'
+  spec 'r' '[sensors:i2sMicFrequency]' 'ISA dominant tone frequency (Hz)'
+  spec 'r' 'ISA SPL' 'ISA SPL (dB)'
+  spec 'r' '[sensors:i2sMicSPL10]' 'ISA SPL (dB x10)'
+  spec ' ' '[sensors:i2sMicSetCalibration]' 'ISA set SPL correction _ (dB x10)' 'num' -47
+  space
+  spec 'r' 'ISA loudness' 'ISA loudness'
+  spec 'r' 'ISA clap count' 'ISA clap count'
+  spec ' ' 'ISA set clap threshold' 'ISA set clap threshold _' 'num' 20000
+  spec 'r' 'ISA clap threshold' 'ISA clap threshold'
+  spec 'r' 'ISA estimate clap threshold' 'ISA estimate clap threshold'
+  advanced
+  spec 'r' '[sensors:i2sMicSample]' 'ISA sample'
+  space
+  spec 'r' '[sensors:i2sMicReadErrors]' 'ISA debug read errors'
+  spec 'r' '[sensors:i2sMicEmptyReads]' 'ISA debug empty reads'
+  spec 'r' '[sensors:i2sMicOddReads]' 'ISA debug odd word reads'
+  spec 'r' '[sensors:i2sMicStackFree]' 'ISA debug reader stack free'
+  spec 'r' '[sensors:i2sMicHeartbeatAge]' 'ISA debug heartbeat age (ms)'
+  spec 'r' '[sensors:i2sMicResetReason]' 'ISA debug reset reason code'
+
+
+to 'ISA setup' channel sck ws sd rate {
+  if (channel == 'Right') {channel = 1} (channel == 'Left') {channel = 0} else {channel = (channel + 0)}
+  rate = (rate + 0)
+  return ('[sensors:i2sMicInit]' sck ws sd channel rate)
+}
+
+to 'ISA measure' milliseconds {
+  return ('[sensors:i2sMicMeasure]' milliseconds)
+}
+
+to 'ISA SPL' {
+  local 'spl10' ('[sensors:i2sMicSPL10]')
+  return ((spl10 + 5) / 10)
+}
+
+to 'ISA status' {
+  local 'code' ('[sensors:i2sMicStatus]')
+  if (code == 1) {return 'running'}
+  if (code == 0) {return 'stopped, or ISA firmware not installed'}
+  if (code == -1) {return 'invalid argument type'}
+  if (code == -2) {return 'invalid SCK, WS, or SD pin'}
+  if (code == -3) {return 'invalid channel or sample rate'}
+  if (code == -4) {return 'I2S driver could not start'}
+  if (code == -5) {return 'I2S pins could not be routed'}
+  if (code == -6) {return 'run ISA setup first'}
+  if (code == -7) {return 'I2S sample read timed out'}
+  return ('[data:join]' 'unknown ISA status ' code)
+}
+
+to 'ISA loudness' {
+  if (not ('[sensors:i2sMicMeasure]' 25)) {return 0}
+  return ('[sensors:i2sMicLoudness]')
+}
+
+to 'ISA set clap threshold' threshold {
+  _ISA_clapThreshold = threshold
+}
+
+to 'ISA clap threshold' {
+  if (_ISA_clapThreshold == 0) {_ISA_clapThreshold = 20000}
+  return _ISA_clapThreshold
+}
+
+to 'ISA estimate clap threshold' {
+  comment 'Discard eight short windows so an I2S or microphone startup transient cannot set the maximum.'
+  repeat 8 {local 'unused' ('ISA loudness')}
+  local 'maximumLoudness' 0
+  resetTimer
+  repeatUntil ((timer) > 3000) {
+    maximumLoudness = (maximum maximumLoudness ('ISA loudness'))
+  }
+  _ISA_clapThreshold = ((13 * maximumLoudness) / 10)
+  return _ISA_clapThreshold
+}
+
+to 'ISA clap count' {
+  if (not ('[sensors:i2sMicRunning]')) {return 0}
+  local 'threshold' ('ISA clap threshold')
+  repeatUntil (('ISA loudness') > threshold) {}
+  local 'count' 1
+  forever {
+    repeatUntil (('ISA loudness') < ((3 * threshold) / 4)) {}
+    resetTimer
+    repeatUntil (('ISA loudness') > threshold) {
+      if ((timer) > 700) {return count}
+    }
+    count += 1
+  }
+}

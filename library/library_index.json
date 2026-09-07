@@ -63,6 +63,15 @@
     "description": "GNSS (GPS, GLONASS, Galileo, BeiDou, QZSS) over I2C\n\nWorks with INA GNSS Receiver based on Quectel L76-L\nhttps://www.quectel.com/product/gnss-l76-l/\nonly reads the NMEA-0183 $GPRMC log\n\nINA init: run once at start.\nINA loop: run inside a loop to refresh GNSS data.\nINA fix: true when positional fix. Date/time can be available before fix.\nINA sleep: put INA to sleep, but wakes up with any activity on I2C towards INA.\nINA balloon mode: extends the altitude coverage from 10km to 80km"
   },
   {
+    "file": "ISA.ubl",
+    "download": "ISA.ubl",
+    "module_name": "ISA",
+    "module_type": "Input",
+    "author": "Bjarke Gotfredsen",
+    "version": "1.0",
+    "description": "Support for the ICS-43434 and compatible standard I2S microphones on CWS/Springbot Green and Gold and Domino4 CWA v2.\nConfigurable BCLK/SCK, WS, SD, sample rate and left/right slot. Measures samples, RMS, peak, estimated SPL and a dominant steady-tone frequency.\nRequires the accompanying MicroBlocks VM with I2S microphone input primitives, find them in the Microphone example here: https://apps.springbot.co.za/examples.html#Microphone.\nhttps://www.invensense.tdk.com/en-us/products/microphone/ics-43434"
+  },
+  {
     "file": "ITA.ubl",
     "download": "ITA.ubl",
     "module_name": "ITA",
