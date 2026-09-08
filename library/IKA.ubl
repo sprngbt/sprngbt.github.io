@@ -1,0 +1,122 @@
+module 'IKA' Input
+author 'Bjarke Gotfredsen'
+version 1 0
+description 'Support for a five-key capacitive-touch keyboard using the Microchip CAP1166-1 over I2C at address 0x28.
+
+CS1 = Left Arrow (code <)
+CS2 = Right Arrow (code >)
+CS3 = Checkmark/Enter (code V)
+CS4 = Cross/Cancel (code X)
+CS5 = Keyboard Logo (code K)
+CS6 is unused. The LED outputs are not controlled by this library.
+
+The key reporters return the one-character codes <, >, V, X, and K. These codes can also be supplied directly to the key-touched reporter. The dropdown uses text symbols because UBL choice menus cannot render SVG icons without changing MicroBlocks itself.
+
+Find data sheet here: https://ww1.microchip.com/downloads/en/DeviceDoc/00001621B.pdf
+'
+choices IKA_key '←:<' '→:>' '✓:V' '✕:X' '⌨:K'
+
+  spec 'r' 'IKA connected?' 'IKA connected?'
+  space
+  spec 'r' 'IKA left touched?' '#SVG#button-left#ffffff'
+  spec 'r' 'IKA right touched?' '#SVG#button-right#ffffff'
+  spec 'r' 'IKA checkmark touched?' '#SVG#button-ok#ffffff'
+  spec 'r' 'IKA cross touched?' '#SVG#button-x#ffffff'
+  spec 'r' 'IKA logo touched?' '#SVG#square#ffffff'
+  space
+  spec 'r' 'IKA key touched?' 'IKA key _ touched?' 'menu.IKA_key' '<'
+  spec 'r' 'IKA any key touched?' 'IKA any key touched?'
+  spec 'r' 'IKA touched keys' 'IKA touched keys'
+  spec 'r' 'IKA wait for key' 'IKA wait for key'
+
+to 'IKA connected?' {
+  local 'address' 40
+  if (not ('[sensors:i2cExists]' address)) {return false}
+  if ((i2cGet address (hexToInt 'FD')) != (hexToInt '51')) {return false}
+  return ((i2cGet address (hexToInt 'FE')) == (hexToInt '5D'))
+}
+
+to '_IKA key index' key {
+  if (key == '<') {return 1}
+  if (key == '>') {return 2}
+  if (key == 'V') {return 3}
+  if (key == 'X') {return 4}
+  if (key == 'K') {return 5}
+  return 0
+}
+
+to '_IKA key code' index {
+  if (index == 1) {return '<'}
+  if (index == 2) {return '>'}
+  if (index == 3) {return 'V'}
+  if (index == 4) {return 'X'}
+  if (index == 5) {return 'K'}
+  return ''
+}
+
+to '_IKA touch bits' {
+  local 'address' 40
+  if (not ('[sensors:i2cExists]' address)) {return 0}
+  local 'bits' ((i2cGet address (hexToInt '03')) & (hexToInt '1F'))
+  local 'main control' (i2cGet address (hexToInt '00'))
+  if (((v 'main control') & 1) != 0) {
+    i2cSet address (hexToInt '00') ((v 'main control') & (hexToInt 'FE'))
+  }
+  return bits
+}
+
+to 'IKA key touched?' key {
+  local 'index' ('_IKA key index' key)
+  if (index == 0) {return false}
+  return ((('_IKA touch bits') & (1 << (index - 1))) != 0)
+}
+
+to 'IKA left touched?' {
+  return ('IKA key touched?' '<')
+}
+
+to 'IKA right touched?' {
+  return ('IKA key touched?' '>')
+}
+
+to 'IKA checkmark touched?' {
+  return ('IKA key touched?' 'V')
+}
+
+to 'IKA cross touched?' {
+  return ('IKA key touched?' 'X')
+}
+
+to 'IKA logo touched?' {
+  return ('IKA key touched?' 'K')
+}
+
+to 'IKA any key touched?' {
+  return (('_IKA touch bits') != 0)
+}
+
+to 'IKA touched keys' {
+  local 'result' ('[data:makeList]')
+  local 'bits' ('_IKA touch bits')
+  for index 5 {
+    if ((bits & (1 << (index - 1))) != 0) {
+      '[data:addLast]' ('_IKA key code' index) result
+    }
+  }
+  return result
+}
+
+to 'IKA wait for key' {
+  local 'bits' 0
+  repeatUntil (bits != 0) {
+    bits = ('_IKA touch bits')
+    waitMillis 10
+  }
+  local 'index' 1
+  repeatUntil ((bits & (1 << (index - 1))) != 0) {
+    index += 1
+  }
+  local 'answer' ('_IKA key code' index)
+  repeatUntil (('_IKA touch bits') == 0) {waitMillis 10}
+  return answer
+}

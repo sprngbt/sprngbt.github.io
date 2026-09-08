@@ -1,0 +1,193 @@
+module Stats Operators
+author 'Bjarke Gotfredsen'
+version 1 0
+description 'Integer statistics for lists.
+
+Numeric entries, including numeric zero, are used directly. Other supported
+entries are converted to numbers and are used only when the converted value is
+non-zero. Values that cannot safely be converted are skipped.
+'
+
+  spec 'r' 'stats_max' 'Stats max of _' 'list' 'aList'
+  spec 'r' 'stats_min' 'Stats min of _' 'list' 'aList'
+  space
+  spec 'r' 'stats_mean' 'Stats mean of _' 'list' 'aList'
+  spec 'r' 'stats_average' 'Stats average of _' 'list' 'aList'
+  spec 'r' 'stats_median' 'Stats median of _' 'list' 'aList'
+  spec 'r' 'stats_mode' 'Stats mode of _' 'list' 'aList'
+  space
+  spec 'r' 'stats_standard_deviation' 'Stats standard deviation of _' 'list' 'aList'
+  spec 'r' 'stats_variance' 'Stats variance of _' 'list' 'aList'
+
+to '_stats converted number' item {
+  if (isType item 'string') {
+    return ('[data:convertType]' item 'number')
+  }
+  if (isType item 'boolean') {
+    return ('[data:convertType]' item 'number')
+  }
+  if (isType item 'list') {
+    if (and ((size item) == 1) (isType (at 1 item) 'number')) {
+      return ('[data:convertType]' item 'number')
+    }
+    return 0
+  }
+  if (isType item 'byte array') {
+    if ((size item) == 1) {
+      return ('[data:convertType]' item 'number')
+    }
+  }
+  return 0
+}
+
+to '_stats numeric values' source {
+  local 'result' ('[data:makeList]')
+  if (not (isType source 'list')) {return result}
+  for item source {
+    if (isType item 'number') {
+      '[data:addLast]' item result
+    } else {
+      local 'converted' ('_stats converted number' item)
+      if (and (isType converted 'number') (converted != 0)) {
+        '[data:addLast]' converted result
+      }
+    }
+  }
+  return result
+}
+
+to '_stats merge step' source left right last destination {
+  local 'i' left
+  local 'j' right
+  local 'k' left
+  repeatUntil (k > last) {
+    if (and (i < right) (or (j > last) ((at i source) <= (at j source)))) {
+      atPut k destination (at i source)
+      i += 1
+    } else {
+      atPut k destination (at j source)
+      j += 1
+    }
+    k += 1
+  }
+}
+
+to '_stats sorted copy' source {
+  local 'sorted' ('[data:copyFromTo]' source 1)
+  local 'length' (size sorted)
+  local 'work' (newList length)
+  local 'width' 1
+  repeatUntil (width >= length) {
+    local 'left' 1
+    repeatUntil (left > length) {
+      '_stats merge step' sorted left (minimum (left + width) length) (minimum (left + ((2 * width) - 1)) length) work
+      left += (2 * width)
+    }
+    for i length {
+      atPut i sorted (at i work)
+    }
+    width = (2 * width)
+  }
+  return sorted
+}
+
+to '_stats mean of values' values {
+  local 'count' (size values)
+  if (count == 0) {return 0}
+  local 'total' 0
+  for value values {
+    total += value
+  }
+  return (total / count)
+}
+
+to '_stats variance of values' values {
+  local 'count' (size values)
+  if (count == 0) {return 0}
+  local 'mean' ('_stats mean of values' values)
+  local 'total squared difference' 0
+  for value values {
+    local 'difference' (value - mean)
+    'total squared difference' += (difference * difference)
+  }
+  return ((v 'total squared difference') / count)
+}
+
+to stats_max source {
+  local 'values' ('_stats numeric values' source)
+  if ((size values) == 0) {return 0}
+  local 'answer' (at 1 values)
+  for value values {
+    if (value > answer) {answer = value}
+  }
+  return answer
+}
+
+to stats_min source {
+  local 'values' ('_stats numeric values' source)
+  if ((size values) == 0) {return 0}
+  local 'answer' (at 1 values)
+  for value values {
+    if (value < answer) {answer = value}
+  }
+  return answer
+}
+
+to stats_mean source {
+  return ('_stats mean of values' ('_stats numeric values' source))
+}
+
+to stats_average source {
+  return ('_stats mean of values' ('_stats numeric values' source))
+}
+
+to stats_median source {
+  local 'values' ('_stats numeric values' source)
+  local 'count' (size values)
+  if (count == 0) {return 0}
+  local 'sorted' ('_stats sorted copy' values)
+  if ((count % 2) == 1) {
+    return (at ((count + 1) / 2) sorted)
+  }
+  local 'upper index' ((count / 2) + 1)
+  return (((at (upper index - 1) sorted) + (at upper index sorted)) / 2)
+}
+
+to stats_mode source {
+  local 'values' ('_stats numeric values' source)
+  local 'count' (size values)
+  if (count == 0) {return 0}
+  local 'sorted' ('_stats sorted copy' values)
+  local 'best value' (at 1 sorted)
+  local 'best count' 1
+  local 'run value' (at 1 sorted)
+  local 'run count' 1
+  local 'index' 2
+  repeatUntil (index > count) {
+    local 'value' (at index sorted)
+    if (value == (v 'run value')) {
+      'run count' += 1
+    } else {
+      if ((v 'run count') > (v 'best count')) {
+        'best count' = (v 'run count')
+        'best value' = (v 'run value')
+      }
+      'run value' = value
+      'run count' = 1
+    }
+    index += 1
+  }
+  if ((v 'run count') > (v 'best count')) {
+    'best value' = (v 'run value')
+  }
+  return (v 'best value')
+}
+
+to stats_standard_deviation source {
+  local 'variance' ('_stats variance of values' ('_stats numeric values' source))
+  return ('[misc:sqrt]' variance)
+}
+
+to stats_variance source {
+  return ('_stats variance of values' ('_stats numeric values' source))
+}

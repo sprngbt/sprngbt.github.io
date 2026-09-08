@@ -45,6 +45,15 @@
     "description": "Support for Rohm Kionix KXTJ3-1057 accelerometer.\nFind data sheet here: https://www.mouser.com/datasheet/2/348/rohm_s_a0002904669_1-2281852.pdf"
   },
   {
+    "file": "IKA.ubl",
+    "download": "IKA.ubl",
+    "module_name": "IKA",
+    "module_type": "Input",
+    "author": "Bjarke Gotfredsen",
+    "version": "1.0",
+    "description": "Support for a five-key capacitive-touch keyboard using the Microchip CAP1166-1 over I2C at address 0x28.\n\nCS1 = Left Arrow (code <)\nCS2 = Right Arrow (code >)\nCS3 = Checkmark/Enter (code V)\nCS4 = Cross/Cancel (code X)\nCS5 = Keyboard Logo (code K)\nCS6 is unused. The LED outputs are not controlled by this library.\n\nThe key reporters return the one-character codes <, >, V, X, and K. These codes can also be supplied directly to the key-touched reporter. The dropdown uses text symbols because UBL choice menus cannot render SVG icons without changing MicroBlocks itself.\n\nFind data sheet here: https://ww1.microchip.com/downloads/en/DeviceDoc/00001621B.pdf"
+  },
+  {
     "file": "ILC.ubl",
     "download": "ILC.ubl",
     "module_name": "ILC",
@@ -133,5 +142,14 @@
     "author": "Bjarke Gotfredsen",
     "version": "1.0",
     "description": "MAX17048 1-cell Fuel Gauge aka Battery Monitor for the PLB 18350 Battery Unit.\nReturns State of Charge (SoC) in Percent and Voltage level in mV\nData sheet: https://www.analog.com/media/en/technical-documentation/data-sheets/MAX17048-MAX17049.pdf"
+  },
+  {
+    "file": "Stats.ubl",
+    "download": "Stats.ubl",
+    "module_name": "Stats",
+    "module_type": "Operators",
+    "author": "Bjarke Gotfredsen",
+    "version": "1.0",
+    "description": "Integer statistics for lists.\n\nNumeric entries, including numeric zero, are used directly. Other supported\nentries are converted to numbers and are used only when the converted value is\nnon-zero. Values that cannot safely be converted are skipped."
   }
 ]
