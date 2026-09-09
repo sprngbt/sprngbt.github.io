@@ -1,0 +1,153 @@
+module 'StringCompression' Data
+author 'Bjarke Gotfredsen'
+version 1 0
+description 'Losslessly compresses short, numeric strings with fixed canonical Huffman coding.
+
+Allowed characters are the digits 0-9 plus comma, period, plus, minus, double quote, and apostrophe.
+
+The compressor accepts a string and returns a byte array. Compression is accepted even when the result saves less than 50 percent. It returns false only for an unsupported character or invalid input. Decompression returns a string with exactly the same type and contents as the original input. The source string is never modified.
+
+The fixed Huffman table is optimized for comma-separated numeric records. Because the table is built into both encoder and decoder, no code tree or original length is stored with each short record. An end-of-string code makes odd lengths unambiguous.
+'
+variables _sc_last_status
+
+  spec 'r' 'compress' 'compress _' 'str' '0123456789.,+-"'
+  spec 'r' 'decompress' 'decompress _' 'bytes' 'compressedBytes'
+  spec 'r' 'compression status' 'compression status'
+
+to 'compress' text {
+  if (not (isType text 'string')) {
+    '_sc_last_status' = 'input must be a string'
+    return false
+  }
+
+  local 'bytes' ('[data:makeList]')
+  local 'bit buffer' 0
+  local 'bit count' 0
+
+  for i (size text) {
+    local 'packed token' ('_SC token for character' ('[data:unicodeAt]' i text))
+    if ((v 'packed token') == 0) {
+      '_sc_last_status' = ('[data:join]' 'unsupported character at position ' i)
+      return false
+    }
+
+    local 'token bits' ((v 'packed token') >> 8)
+    local 'token code' ((v 'packed token') & 255)
+    'bit buffer' = (((v 'bit buffer') << (v 'token bits')) | (v 'token code'))
+    'bit count' += (v 'token bits')
+
+    repeatUntil ((v 'bit count') < 8) {
+      local 'shift' ((v 'bit count') - 8)
+      '[data:addLast]' (((v 'bit buffer') >> (v 'shift')) & 255) (v 'bytes')
+      'bit count' += -8
+      'bit buffer' = ((v 'bit buffer') & ((1 << (v 'bit count')) - 1))
+    }
+  }
+
+  comment 'Append the seven-bit end-of-string code 1111110.'
+  'bit buffer' = (((v 'bit buffer') << 7) | 126)
+  'bit count' += 7
+  repeatUntil ((v 'bit count') < 8) {
+    local 'shift' ((v 'bit count') - 8)
+    '[data:addLast]' (((v 'bit buffer') >> (v 'shift')) & 255) (v 'bytes')
+    'bit count' += -8
+    'bit buffer' = ((v 'bit buffer') & ((1 << (v 'bit count')) - 1))
+  }
+  if ((v 'bit count') > 0) {
+    '[data:addLast]' (((v 'bit buffer') << (8 - (v 'bit count'))) & 255) (v 'bytes')
+  }
+
+  '_sc_last_status' = 'compressed'
+  return ('[data:convertType]' (v 'bytes') 'byte array')
+}
+
+to 'decompress' compressedBytes {
+  if (not (isType compressedBytes 'byte array')) {
+    '_sc_last_status' = 'compressed input must be a byte array'
+    return false
+  }
+
+  local 'characters' ('[data:makeList]')
+  local 'code' 0
+  local 'code length' 0
+
+  for byte compressedBytes {
+    for bitIndex 8 {
+      local 'bit' ((byte >> (8 - bitIndex)) & 1)
+      'code' = (((v 'code') << 1) | (v 'bit'))
+      'code length' += 1
+      local 'decoded' ('_SC decoded character' (v 'code') (v 'code length'))
+
+      if ((v 'decoded') == -1) {
+        '_sc_last_status' = 'decompressed'
+        return ('[data:unicodeString]' (v 'characters'))
+      }
+      if ((v 'decoded') > 0) {
+        '[data:addLast]' (v 'decoded') (v 'characters')
+        'code' = 0
+        'code length' = 0
+      }
+    }
+  }
+
+  '_sc_last_status' = 'invalid or incomplete compressed data'
+  return false
+}
+
+to 'compression status' {
+  if ((v '_sc_last_status') == 0) {return 'ready'}
+  return (v '_sc_last_status')
+}
+
+to '_SC token for character' characterCode {
+  comment 'The high byte is code length; the low byte is the canonical Huffman code.'
+  if (characterCode == 44) {return 512}
+  if (characterCode == 48) {return 770}
+  if (characterCode == 49) {return 771}
+  if (characterCode == 46) {return 1032}
+  if (characterCode == 50) {return 1033}
+  if (characterCode == 51) {return 1034}
+  if (characterCode == 52) {return 1035}
+  if (characterCode == 53) {return 1036}
+  if (characterCode == 57) {return 1037}
+  if (characterCode == 55) {return 1308}
+  if (characterCode == 56) {return 1309}
+  if (characterCode == 43) {return 1596}
+  if (characterCode == 45) {return 1597}
+  if (characterCode == 54) {return 1598}
+  if (characterCode == 34) {return 2302}
+  if (characterCode == 39) {return 2303}
+  return 0
+}
+
+to '_SC decoded character' code length {
+  if (and (length == 2) (code == 0)) {return 44}
+  if (length == 3) {
+    if (code == 2) {return 48}
+    if (code == 3) {return 49}
+  }
+  if (length == 4) {
+    if (code == 8) {return 46}
+    if (code == 9) {return 50}
+    if (code == 10) {return 51}
+    if (code == 11) {return 52}
+    if (code == 12) {return 53}
+    if (code == 13) {return 57}
+  }
+  if (length == 5) {
+    if (code == 28) {return 55}
+    if (code == 29) {return 56}
+  }
+  if (length == 6) {
+    if (code == 60) {return 43}
+    if (code == 61) {return 45}
+    if (code == 62) {return 54}
+  }
+  if (and (length == 7) (code == 126)) {return -1}
+  if (length == 8) {
+    if (code == 254) {return 34}
+    if (code == 255) {return 39}
+  }
+  return 0
+}

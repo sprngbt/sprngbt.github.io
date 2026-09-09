@@ -151,5 +151,14 @@
     "author": "Bjarke Gotfredsen",
     "version": "1.0",
     "description": "Integer statistics for lists.\n\nNumeric entries, including numeric zero, are used directly. Other supported\nentries are converted to numbers and are used only when the converted value is\nnon-zero. Values that cannot safely be converted are skipped."
+  },
+  {
+    "file": "StringCompression.ubl",
+    "download": "StringCompression.ubl",
+    "module_name": "StringCompression",
+    "module_type": "Data",
+    "author": "Bjarke Gotfredsen",
+    "version": "1.0",
+    "description": "Losslessly compresses short, numeric strings with fixed canonical Huffman coding.\n\nAllowed characters are the digits 0-9 plus comma, period, plus, minus, double quote, and apostrophe.\n\nThe compressor accepts a string and returns a byte array. Compression is accepted even when the result saves less than 50 percent. It returns false only for an unsupported character or invalid input. Decompression returns a string with exactly the same type and contents as the original input. The source string is never modified.\n\nThe fixed Huffman table is optimized for comma-separated numeric records. Because the table is built into both encoder and decoder, no code tree or original length is stored with each short record. An end-of-string code makes odd lengths unambiguous."
   }
 ]
