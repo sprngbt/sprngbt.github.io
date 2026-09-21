@@ -2,28 +2,20 @@ module main
 author unknown
 version 1 0 
 description ''
-variables Level 
+variables Level High Low 
 
-script 111 33 {
-whenStarted
-comment 'This example shows if there is sufficient light in a classroom for effective reading and learning.'
-comment 'The preferred light level should be set in this field. In this example, the level is set at 100. You may change this.'
-Level = 100
-forever {
-  comment 'This "forever" loop determines if the light is sufficient. If the value is larger than the "Level" set 
-above, it will indicate "yes" on the 25 LEDs on the Springbot Green. The same "yes" will
-appear on the OLED screen of the Springbot Gold.'
-  if (('[display:lightLevel]') > Level) {
-    led_displayImage 'yes'
-    waitMillis 2000
-    comment 'This "wait" conrol was added to slow down the cycles of the loop. Without it, the display tended to flash every 500 millisecods.'
-  } else {
-    comment 'If the light is not sufficient; the value is less than the "Level" set above, it will indicate "no" on the 
-25 LEDs on the Springbot Green. The same "no" will appear on the OLED screen of the 
-Springbot Gold.  '
-    led_displayImage 'no'
-    waitMillis 2000
-  }
+script 111 69 {
+whenButtonPressed 'A'
+comment 'This example sounds an alarm if the temperature is too high or too low for comfort.'
+comment 'The preferred temperature range should be set in this field. In this example, High is 35 and Low is 15. 
+You may change this.'
+High = 35
+Low = 15
+if (('[sensors:temperature]') > High) {
+  'play tone' 'nt;c' 0 500
+}
+if (('[sensors:temperature]') < Low) {
+  'play tone' 'nt;a' 0 500
 }
 }
 

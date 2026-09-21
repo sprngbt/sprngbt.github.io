@@ -1,0 +1,8 @@
+module main
+author Oliver Gotfredsen
+version 1.0
+description 'Using the ISA microphone, measure sound pressure level(SPL) in decibels(dB). Requires additional firmware for the microphone, see attached files.'
+codeimage MeasureSound.png
+storyimage
+url
+files Microphone-firmware-Springbot.bin

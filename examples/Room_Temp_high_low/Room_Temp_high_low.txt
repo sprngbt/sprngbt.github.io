@@ -1,0 +1,6 @@
+module main
+author Judi Sandrock
+version 1 0
+description 'The Springbot sounds an alarm if the room temperature is too high or too low for comfort'
+codeimage Room_Temp_high_low.png
+storyimage Story_Room_Temp.png

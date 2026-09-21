@@ -1,0 +1,348 @@
+module main
+author unknown
+version 1 0 
+description ''
+variables _springbot_LED_color 
+
+  spec ' ' 'show' 'show _' 'auto'
+
+to show SPL {
+}
+
+script 281 49 {
+whenStarted
+comment 'First, the microphone needs to be setup.'
+if ('ISA setup' 'Right' 44 43 1 16000) {
+  forever {
+    comment 'Then, measure.'
+    if ('ISA measure' 2) {
+      comment 'Then, display.'
+      waitMillis 1
+      comment '"_defer..." & "_resume..." stops screen flickering'
+      '_deferMonochromeDisplayUpdates'
+      '[tft:clear]'
+      'tft:text' ('[data:joinStrings]' ('[data:makeList]' ('ISA SPL') 'dB')) 5 5 false 3 true
+      '_resumeMonochromeDisplayUpdates'
+    }
+  }
+} else {
+}
+}
+
+
+module ISA Input
+author 'Bjarke Gotfredsen'
+version 1 0 
+choices ISA_channel Right Left 
+choices ISA_rate '16000:16000' '32000:32000' '48000:48000' 
+description 'Support for the ICS-43434 and compatible standard I2S microphones on CWS/Springbot Green and Gold and Domino4 CWA v2.
+Configurable BCLK/SCK, WS, SD, sample rate and left/right slot. Measures samples, RMS, peak, estimated SPL and a dominant steady-tone frequency.
+Requires the accompanying MicroBlocks VM with I2S microphone input primitives, find them in the Microphone example here: https://apps.springbot.co.za/examples.html#Microphone.
+https://www.invensense.tdk.com/en-us/products/microphone/ics-43434
+'
+variables _ISA_clapThreshold 
+
+  spec 'r' 'ISA setup' 'ISA setup channel _ GPIO SCK _ WS _ SD _ sample rate _ Hz' 'menu.ISA_channel num num num menu.ISA_rate' 'Right' 44 43 1 16000
+  spec 'r' '[sensors:i2sMicRunning]' 'ISA running?'
+  spec 'r' 'ISA status' 'ISA status'
+  spec ' ' '[sensors:i2sMicStop]' 'ISA stop'
+  space
+  spec 'r' 'ISA measure' 'ISA measure for _ milliseconds' 'num' 100
+  space
+  spec 'r' '[sensors:i2sMicRMS]' 'ISA RMS'
+  spec 'r' '[sensors:i2sMicPeak]' 'ISA peak'
+  spec 'r' '[sensors:i2sMicFrequency]' 'ISA dominant tone frequency (Hz)'
+  spec 'r' 'ISA SPL' 'ISA SPL (dB)'
+  spec 'r' '[sensors:i2sMicSPL10]' 'ISA SPL (dB x10)'
+  spec ' ' '[sensors:i2sMicSetCalibration]' 'ISA set SPL correction _ (dB x10)' 'num' -47
+  space
+  spec 'r' 'ISA loudness' 'ISA loudness'
+  spec 'r' 'ISA clap count' 'ISA clap count'
+  spec ' ' 'ISA set clap threshold' 'ISA set clap threshold _' 'num' 20000
+  spec 'r' 'ISA clap threshold' 'ISA clap threshold'
+  spec 'r' 'ISA estimate clap threshold' 'ISA estimate clap threshold'
+  advanced
+  spec 'r' '[sensors:i2sMicSample]' 'ISA sample'
+  space
+  spec 'r' '[sensors:i2sMicReadErrors]' 'ISA debug read errors'
+  spec 'r' '[sensors:i2sMicEmptyReads]' 'ISA debug empty reads'
+  spec 'r' '[sensors:i2sMicOddReads]' 'ISA debug odd word reads'
+  spec 'r' '[sensors:i2sMicStackFree]' 'ISA debug reader stack free'
+  spec 'r' '[sensors:i2sMicHeartbeatAge]' 'ISA debug heartbeat age (ms)'
+  spec 'r' '[sensors:i2sMicResetReason]' 'ISA debug reset reason code'
+
+to 'ISA SPL' {
+  local 'spl10' ('[sensors:i2sMicSPL10]')
+  return ((spl10 + 5) / 10)
+}
+
+to 'ISA clap count' {
+  if (not ('[sensors:i2sMicRunning]')) {return 0}
+  local 'threshold' ('ISA clap threshold')
+  repeatUntil (('ISA loudness') > threshold) nil
+  local 'count' 1
+  forever {
+    repeatUntil (('ISA loudness') < ((3 * threshold) / 4)) nil
+    resetTimer
+    repeatUntil (('ISA loudness') > threshold) {
+      if ((timer) > 700) {return count}
+    }
+    count += 1
+  }
+}
+
+to 'ISA clap threshold' {
+  if (_ISA_clapThreshold == 0) {_ISA_clapThreshold = 20000}
+  return _ISA_clapThreshold
+}
+
+to 'ISA estimate clap threshold' {
+  comment 'Discard eight short windows so an I2S or microphone startup transient cannot set the maximum.'
+  repeat 8 {
+    local 'unused' ('ISA loudness')
+  }
+  local 'maximumLoudness' 0
+  resetTimer
+  repeatUntil ((timer) > 3000) {
+    maximumLoudness = (maximum maximumLoudness ('ISA loudness'))
+  }
+  _ISA_clapThreshold = ((13 * maximumLoudness) / 10)
+  return _ISA_clapThreshold
+}
+
+to 'ISA loudness' {
+  if (not ('[sensors:i2sMicMeasure]' 25)) {return 0}
+  return ('[sensors:i2sMicLoudness]')
+}
+
+to 'ISA measure' milliseconds {
+  return ('[sensors:i2sMicMeasure]' milliseconds)
+}
+
+to 'ISA set clap threshold' threshold {
+  _ISA_clapThreshold = threshold
+}
+
+to 'ISA setup' channel sck ws sd rate {
+  if (channel == 'Right') {
+    channel = 1
+  } (channel == 'Left') {
+    channel = 0
+  } else {
+    channel = (channel + 0)
+  }
+  rate = (rate + 0)
+  return ('[sensors:i2sMicInit]' sck ws sd channel rate)
+}
+
+to 'ISA status' {
+  local 'code' ('[sensors:i2sMicStatus]')
+  if (code == 1) {
+    return 'running'
+  }
+  if (code == 0) {
+    return 'stopped, or ISA firmware not installed'
+  }
+  if (code == -1) {
+    return 'invalid argument type'
+  }
+  if (code == -2) {
+    return 'invalid SCK, WS, or SD pin'
+  }
+  if (code == -3) {
+    return 'invalid channel or sample rate'
+  }
+  if (code == -4) {
+    return 'I2S driver could not start'
+  }
+  if (code == -5) {
+    return 'I2S pins could not be routed'
+  }
+  if (code == -6) {
+    return 'run ISA setup first'
+  }
+  if (code == -7) {
+    return 'I2S sample read timed out'
+  }
+  return ('[data:join]' 'unknown ISA status ' code)
+}
+
+
+module Springbot
+author MicroBlocks
+version 1 0 
+tags tilt acceleration light temperature 
+description '
+Blocks for the Springbot including sensors and NeoPixel.'
+variables _springbot_LED_color 
+
+  spec ' ' 'springbot_setColorLED' 'set color LED to _' 'color'
+  spec ' ' 'springbot_clearColorLED' 'clear color LED'
+  spec ' ' 'springbot_brightenBy' 'brighten color LED by _' 'num' 10
+  space
+  spec 'r' 'springbot_colorSwatch' '_' 'color'
+  spec 'r' 'springbot_colorFromRGB' 'color r _ g _ b _ (0-255)' 'num num num' 100 0 0
+  spec 'r' 'springbot_randomColor' 'random color'
+  space
+  spec 'r' '[sensors:tiltX]' 'tilt x'
+  spec 'r' '[sensors:tiltY]' 'tilt y'
+  spec 'r' '[sensors:tiltZ]' 'tilt z'
+  spec 'r' '[sensors:acceleration]' 'acceleration'
+  space
+  spec 'r' '[display:lightLevel]' 'light level'
+  spec 'r' '[sensors:temperature]' 'temperature (°C)'
+
+to springbot_brightenBy delta {
+  if (_springbot_LED_color != 0) {
+    local 'h' ('[misc:hue]' _springbot_LED_color)
+    local 's' ('[misc:saturation]' _springbot_LED_color)
+    local 'v' (('[misc:brightness]' _springbot_LED_color) + delta)
+    v = (maximum 20 (minimum v 100))
+    springbot_setColorLED ('[misc:hsvColor]' h s v)
+  }
+}
+
+to springbot_clearColorLED {
+  springbot_setColorLED 0
+}
+
+to springbot_colorFromRGB r g b {
+  r = (maximum 0 (minimum r 255))
+  g = (maximum 0 (minimum g 255))
+  b = (maximum 0 (minimum b 255))
+  return (((r << 16) | (g << 8)) | b)
+}
+
+to springbot_colorSwatch color {
+  return color
+}
+
+to springbot_randomColor {
+  local 'n1' (random 100 200)
+  local 'n2' (random 0 100)
+  if (1 == (random 1 3)) {
+    return ((n1 << 16) | (n2 << 8))
+  } (1 == (random 1 2)) {
+    return ((n2 << 16) | n1)
+  } else {
+    return ((n1 << 8) | n2)
+  }
+}
+
+to springbot_setColorLED color {
+  _springbot_LED_color = color
+  '[display:neoPixelSetPin]' -1 false
+  '[display:neoPixelSend]' _springbot_LED_color
+  waitMicros 300
+}
+
+
+module 'Springbot Display' Output
+author 'bjarke@gotfredsen.com'
+version 1 0 
+depends Springbot 
+description 'Draw monochrome graphics and write text on boards with a TFT/OLED display'
+
+  spec ' ' '[tft:clear]' 'clear display'
+  space
+  spec ' ' 'tft:rect' 'draw rectangle at x _ y _ width _ height _ inverted _ : filled _' 'num num num num bool bool' 10 10 40 30 false true
+  spec ' ' 'tft:roundedRect' 'draw rounded rectangle at x _ y _ width _ height _ radius _ inverted _ : filled _' 'num num num num num bool bool' 10 10 40 30 8 false true
+  spec ' ' 'tft:circle' 'draw circle at x _ y _ radius _ inverted _ : filled _' 'num num num bool bool' 40 40 30 false true
+  spec ' ' 'tft:triangle' 'draw triangle at x _ y _ , x _ y _ , x _ y _ inverted _ : filled _' 'num num num num num num bool bool' 20 20 30 80 60 5 false true
+  spec ' ' 'tft:line' 'draw line from x _ y _ to x _ y _ inverted _' 'num num num num bool' 12 8 25 15 false
+  spec ' ' 'tft_drawVector' 'draw vector x _ y _ angle _ length _ inverted _' 'num num num num bool' 40 40 45 40 false
+  space
+  spec ' ' 'tft:text' 'write _ at x _ y _ inverted _ : scale _ wrap _ : bg inverted _' 'str num num bool num bool bool' 'Hello World!' 5 5 false 2 true true
+  spec ' ' 'tft_drawText' 'draw text _ at x _ y _ inverted _ : scale _ : bg inverted _' 'str num num bool num bool' 'Line 1
+Line 2' 50 20 false 2 true
+  space
+  spec ' ' 'tft:setPixel' 'set pixel x _ y _ to inverted _' 'num num bool' 10 10 false
+  spec ' ' '[tft:pixelRow]' 'draw pixel row _ x _ y _ : bytesPerPixel _ : palette _' 'auto num num num str' 'aList' 0 0 4
+  spec ' ' '[tft:drawBitmap]' 'draw bitmap _ palette _ at x _ y _' 'str str num num' 'aBitmap' 'a list of colors' 10 10
+  space
+  spec 'r' 'black' 'black'
+  spec 'r' 'white' 'white'
+  space
+  spec 'r' '[tft:getWidth]' 'display width'
+  spec 'r' '[tft:getHeight]' 'display height'
+  space
+  spec ' ' '[tft:setBacklight]' 'set display backlight _ (0-10)' 'num' 10
+  space
+  spec ' ' '_deferMonochromeDisplayUpdates' '_defer monochrome display updates'
+  spec ' ' '_resumeMonochromeDisplayUpdates' '_resume monochrome display updates'
+
+to '_deferMonochromeDisplayUpdates' {
+  '[tft:deferUpdates]'
+}
+
+to '_resumeMonochromeDisplayUpdates' {
+  '[tft:resumeUpdates]'
+}
+
+to black {
+  return 0
+}
+
+to 'tft:circle' x y radius inverted filled {
+  '[tft:circle]' x y radius (tft__bwColor inverted) filled
+}
+
+to 'tft:line' x1 y1 x2 y2 inverted {
+  '[tft:line]' x1 y1 x2 y2 (tft__bwColor inverted)
+}
+
+to 'tft:rect' x y w h inverted filled {
+  '[tft:rect]' x y w h (tft__bwColor inverted) filled
+}
+
+to 'tft:roundedRect' x y w h radius inverted filled {
+  '[tft:roundedRect]' x y w h radius (tft__bwColor inverted) filled
+}
+
+to 'tft:setPixel' x y inverted {
+  '[tft:setPixel]' x y (tft__bwColor inverted)
+}
+
+to 'tft:text' s x y inverted optionalScale wrap optionalBGInverted {
+  s = ('[data:convertType]' s 'string')
+  local 'scale' (argOrDefault 5 2)
+  local 'bgInverted' (argOrDefault 7 true)
+  local 'fg' (tft__bwColor inverted)
+  local 'bg' (tft__bwColor bgInverted)
+  '[tft:text]' s x y fg scale wrap bg
+}
+
+to 'tft:triangle' x1 y1 x2 y2 x3 y3 inverted filled {
+  '[tft:triangle]' x1 y1 x2 y2 x3 y3 (tft__bwColor inverted) filled
+}
+
+to tft__bwColor inverted {
+  if inverted {
+    return (black)
+  } else {
+    return (white)
+  }
+}
+
+to tft_drawText s x y inverted optionalScale optionalBGInverted {
+  s = ('[data:convertType]' s 'string')
+  local 'scale' (argOrDefault 5 2)
+  local 'bgInverted' (argOrDefault 6 true)
+  local 'fg' (tft__bwColor inverted)
+  local 'bg' (tft__bwColor bgInverted)
+  for line ('[data:split]' s ('[data:unicodeString]' 10)) {
+    '[tft:text]' line x y fg scale false bg
+    y += (8 * scale)
+  }
+}
+
+to tft_drawVector x y angle length inverted {
+  local 'endX' (x + ((length * ('[misc:sin]' (100 * (angle + 90)))) >> 14))
+  local 'endY' (y + ((length * ('[misc:sin]' (100 * angle))) >> 14))
+  'tft:line' x y endX endY inverted
+}
+
+to white {
+  return 16777215
+}
+

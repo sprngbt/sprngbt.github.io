@@ -72,6 +72,20 @@
     "files": []
   },
   {
+    "file": "Measure Sound/MeasureSound.ubp",
+    "download": "Measure Sound/MeasureSound.ubp",
+    "example_name": "MeasureSound",
+    "author": "Oliver Gotfredsen",
+    "version": "1.0",
+    "description": "Using the ISA microphone, measure sound pressure level(SPL) in decibels(dB). Requires additional firmware for the microphone, see attached files.",
+    "codeimage": "Measure Sound/MeasureSound.png",
+    "storyimage": "",
+    "url": "",
+    "files": [
+      "Measure Sound/Microphone-firmware-Springbot.bin"
+    ]
+  },
+  {
     "file": "Move_the_LED/Move_the_LED.ubp",
     "download": "Move_the_LED/Move_the_LED.ubp",
     "example_name": "Move_the_LED",
@@ -135,6 +149,18 @@
       "PlayTune/HappyBirthdayToYou.csv",
       "PlayTune/Nkosi_Sikelel_iAfrica.csv"
     ]
+  },
+  {
+    "file": "Room_Temp_high_low/Room_Temp_high_low.ubp",
+    "download": "Room_Temp_high_low/Room_Temp_high_low.ubp",
+    "example_name": "Room_Temp_high_low",
+    "author": "Judi Sandrock",
+    "version": "1.0",
+    "description": "The Springbot sounds an alarm if the room temperature is too high or too low for comfort",
+    "codeimage": "Room_Temp_high_low/Room_Temp_high_low.png",
+    "storyimage": "Room_Temp_high_low/Story_Room_Temp.png",
+    "url": "",
+    "files": []
   },
   {
     "file": "SoilMoisture/SoilMoisture.ubp",
